@@ -16,9 +16,8 @@ class Test extends Parser {
             } else {
                 return output.includes('Running test ');
             }
-        } else {
-            return false;
         }
+        return false;
     }
 
     async parse(output) {

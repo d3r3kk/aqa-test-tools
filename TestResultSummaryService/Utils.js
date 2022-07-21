@@ -1,5 +1,5 @@
 const winston = require('winston');
-const logLevel = process.env.LOG_LEVEL || 'verbose';
+const logLevel = process.env.LOG_LEVEL || 'debug';
 
 const tsFormat = () => new Date().toLocaleTimeString();
 const logger = new winston.Logger({
@@ -28,4 +28,11 @@ const addCredential = (credentails, url) => {
     return url;
 };
 
-module.exports = { logger, addCredential };
+const getParams = query => {
+    if (!query) {
+        return {};
+    }
+    return (/^[?#]/.test(query) ? query.slice(1) : query).split('&').reduce((params, param) => { let [key, value] = param.split('='); params[key] = value ? decodeURIComponent(value.replace(/\+/g, ' ')) : ''; return params; }, {});
+};
+
+module.exports = { logger, addCredential, getParams };

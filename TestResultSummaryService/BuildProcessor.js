@@ -1,25 +1,25 @@
 const DataManager = require('./DataManager');
-const JenkinsInfo = require('./JenkinsInfo');
 const LogStream = require('./LogStream');
 const ObjectID = require('mongodb').ObjectID;
 const { TestResultsDB, OutputDB, AuditLogsDB } = require('./Database');
 const { logger } = require('./Utils');
 const plugins = require('./plugins');
+const { getCIProviderName, getCIProviderObj } = require(`./ciServers/`);
 
 class BuildProcessor {
     async execute(task) {
         const { url, buildName, buildNum } = task;
-        const jenkinsInfo = new JenkinsInfo();
+        if (!task.server) {
+            task.server = getCIProviderName(url);
+        }
+        const ciServer = getCIProviderObj(task.server);
+
         if (url && (url.endsWith('job') || url.endsWith('job/'))) {
             let tokens = url.split('job');
             tokens.pop();
             url = tokens.join('job');
         }
-        const buildInfo = await jenkinsInfo.getBuildInfo(
-            url,
-            buildName,
-            buildNum
-        );
+        const buildInfo = await ciServer.getBuildInfo(task);
 
         if (buildInfo) {
             if (buildInfo.code === 404) {
@@ -32,11 +32,11 @@ class BuildProcessor {
                 await new DataManager().updateBuild(task);
                 return;
             }
-            task.buildParams = jenkinsInfo.getBuildParams(buildInfo);
+            task.buildParams = ciServer.getBuildParams(buildInfo);
             let output = '';
             if (task.status === 'Streaming') {
                 if (!buildInfo.building) {
-                    await this.processBuild(task, buildInfo, jenkinsInfo);
+                    await this.processBuild(task, buildInfo, ciServer);
                 } else {
                     const date = new Date();
                     const currentTime = date.getTime();
@@ -136,7 +136,7 @@ class BuildProcessor {
             }
         }
     }
-    async processBuild(task, buildInfo, jenkinsInfo) {
+    async processBuild(task, buildInfo, ciServer) {
         // if the build is done, update the record in db.
         // else if no timestamp or buildUrl, update the record in db.
         // Otherwise, do nothing.
@@ -149,12 +149,9 @@ class BuildProcessor {
             let output = '';
             let msg = 'updateBuildWithOutput';
             try {
-                output = await jenkinsInfo.getBuildOutput(
-                    task.url,
-                    task.buildName,
-                    task.buildNum
-                );
+                output = await ciServer.getBuildOutput(task);
                 if (output) {
+                    console.log("output", output);
                     task.output = output;
                     await new DataManager().updateBuildWithOutput(task);
                 } else {

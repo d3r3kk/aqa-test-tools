@@ -1,8 +1,9 @@
-const JenkinsInfo = require('../JenkinsInfo');
+const { getCIProviderName, getCIProviderObj } = require(`../ciServers/`);
 const Promise = require('bluebird');
 module.exports = async (req, res) => {
     const { url, buildName } = req.query;
-    const jenkinsInfo = new JenkinsInfo();
-    const result = await jenkinsInfo.getLastBuildInfo(url, buildName);
+    const server = getCIProviderName(url);
+    const ciServer = getCIProviderObj(server);
+    const result = await ciServer.getLastBuildInfo(url, buildName);
     res.send({ result });
-};
+}

@@ -33,13 +33,13 @@ class AzureDevOps {
 
     async getAllBuilds(url, buildName) {
         // your collection url
-        const orgUrl = "https://dev.azure.com/adoptopenjdk";
-        const token = "token value";
+        const orgUrl = "https://dev.azure.com/adoptopenjdk"; // TODO: Paramatrize
+        const token = "token value"; // TODO: Obtain PAT and paramaterize here.
         const authHandler = azdev.getPersonalAccessTokenHandler(token);
         const connection = new azdev.WebApi(orgUrl, authHandler);
 
         const build = await connection.getBuildApi();
-        const project = "AdoptOpenJDK";
+        const project = "AdoptOpenJDK"; // TODO: Paramatrize.
         const defs = await build.getDefinitions(project);
 
         const testApiObject = await connection.getTestApi();

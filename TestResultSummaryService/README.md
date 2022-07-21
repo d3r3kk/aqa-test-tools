@@ -69,7 +69,7 @@ npm install
 npm start
 ```
 
--   Open http://localhost:3000 in your broswer, you should see sample data showing up!
+-   Open http://localhost:3000 in your browser, you should see sample data showing up!
 
 ## Production server
 

@@ -1,33 +1,30 @@
 const DataManager = require('./DataManager');
-const JenkinsInfo = require('./JenkinsInfo');
-const ObjectID = require('mongodb').ObjectID;
 const Promise = require('bluebird');
 const { TestResultsDB, AuditLogsDB } = require('./Database');
 const { logger } = require('./Utils');
 const {
     deleteBuildsAndChildrenByFields,
 } = require('./routes/deleteBuildsAndChildrenByFields');
+const { getCIProviderName, getCIProviderObj } = require(`./ciServers/`);
 
 class BuildMonitor {
-    async execute(task) {
+    async execute(task, historyNum = 5) {
+
         let { buildUrl, type, streaming } = task;
-        if (!buildUrl || !type) {
-            logger.error(
-                'BuildMonitor: Invalid buildUrl and/or type',
-                buildUrl,
-                type
-            );
-            return;
-        }
-        const { buildName, url } = this.getBuildInfo(buildUrl);
+
+        const server = getCIProviderName(buildUrl);
+        const ciServer = getCIProviderObj(server);
+    	const { buildName, url } = ciServer.getBuildInfoByUrl(buildUrl);
+
         if (!buildName) {
             logger.error('BuildMonitor: Cannot parse buildUrl ', buildUrl);
             return;
         }
         logger.debug('BuildMonitor: url', url, 'buildName', buildName);
 
-        const jenkinsInfo = new JenkinsInfo();
-        const allBuilds = await jenkinsInfo.getAllBuilds(url, buildName);
+        logger.error("BuildMonitor: ciServer.getAllBuilds ");
+        const allBuilds = await ciServer.getAllBuilds(url, buildName);
+        logger.error("BuildMonitor: after ciServer.getAllBuilds ", allBuilds);
         if (!Array.isArray(allBuilds)) {
             logger.error('allBuilds:', allBuilds);
             logger.error('BuildMonitor: Cannot find the build ', buildUrl);
@@ -44,7 +41,7 @@ class BuildMonitor {
          * all remaining builds that has a lower build number is in
          * db.
          */
-        const limit = Math.min(5, allBuilds.length);
+        const limit = Math.min(historyNum, allBuilds.length);
         const testResults = new TestResultsDB();
         for (let i = 0; i < limit; i++) {
             const buildNum = parseInt(allBuilds[i].id, 10);
@@ -74,6 +71,7 @@ class BuildMonitor {
                     type: type === 'FVT' ? 'Test' : type,
                     keepForever,
                     status,
+                    server
                 };
                 const _id = await new DataManager().createBuild(buildData);
                 await new AuditLogsDB().insertAuditLogs({
@@ -84,6 +82,7 @@ class BuildMonitor {
                     buildNum,
                     keepForever,
                     status,
+                    server
                 });
             } else {
                 break;
@@ -91,34 +90,12 @@ class BuildMonitor {
         }
     }
 
-    getBuildInfo(buildUrl) {
-        // remove space and last /
-        buildUrl = buildUrl.trim().replace(/\/$/, '');
-
-        let url = null;
-        let buildName = null;
-
-        //split based on / and buildName should be the last element
-        let tokens = buildUrl.split('/');
-        if (tokens && tokens.length > 1) {
-            buildName = tokens.pop();
-        }
-
-        if (buildUrl.includes('/view/')) {
-            tokens = buildUrl.split(/\/view\//);
-            // set url to domain only
-            if (tokens && tokens.length > 1) {
-                url = tokens[0];
-            }
-        } else if (buildUrl.includes('/job/')) {
-            url = buildUrl.replace('/job/' + buildName, '');
-        }
-        return { buildName, url };
-    }
-
     async deleteOldBuilds(task) {
         let { buildUrl, numBuildsToKeep, deleteForever } = task;
-        const { buildName, url } = this.getBuildInfo(buildUrl);
+        const server = getCIProviderName(buildUrl);
+        const ciServer = getCIProviderObj(server);
+        const { buildName, url } = ciServer.getBuildInfoByUrl(buildUrl);
+
         // keep only limited builds in DB and delete old builds
         const testResults = new TestResultsDB();
         let query = { url, buildName };

@@ -7,6 +7,8 @@ const ArgParser = require("../ArgParser");
 const CIServer = require('./CIServer');
 
 const fs = require('fs');
+const { url } = require('inspector');
+const e = require('express');
 
 const options = { request: { timeout: 2000 } };
 
@@ -61,7 +63,7 @@ class Azure extends CIServer {
 
     // Assumming if it is not azure, it is Jenkins
     static matchServer(buildUrl) {
-        return buildUrl.match(/dev.azure.com/);
+        return buildUrl.match(/dev.azure.com/) || buildUrl.match(/visualstudio.com/);
     }
 
 
@@ -122,25 +124,27 @@ timestamp: 1584734443756
     }
 
     async getBuildInfo(task) {
-        const { url, buildNum, subId } = task;
-        // const token = this.getToken(url);
-        // const { projectName, orgUrl } = this.getProjectInfo(url);
-        // const authHandler = azdev.getPersonalAccessTokenHandler(token);
-        // const connection = new azdev.WebApi(orgUrl, authHandler);
-
-        // const buildApi = await connection.getBuildApi();
-        // const timeline = await buildApi.getBuildTimeline(projectName, buildNum);
+        let [url, buildName, buildNum, subId] = task
         const records = await this.getTimelineRecords(url, buildNum);
-        // console.log("***************getTimelineRecords records", url, buildNum, records.length);
-        for (let rec of records) {
-            if (rec.id === subId) {
-                return this.formatData([rec], true);
+        //return records
+        if(subId){
+            for(let rec of records){
+                if(rec.subId === subId){
+                    return [rec];
+                }
             }
-        };
+        }
+        else{
+            return records
+        }
+        // for (let rec of records) {
+        //     return ([rec])
+        // };
         return null;
     }
 
     formatData(data, setBuildNum = false, url) {
+
         return data.map(d => {
             let buildUrl = url;
             if (d._links) {
@@ -149,20 +153,51 @@ timestamp: 1584734443756
                 buildUrl = d.url;
             } else if (d.log) {
                 buildUrl = d.log.url;
+            } else if (d.buildUrl){
+                buildUrl =d.buildUrl
+            }
+            else{
+                buildUrl = null;
+            }
+
+            let buildName = null;
+            if(d.definition){
+                buildName = d.definition.name
+            }
+            else if(d.name){
+                buildName = d.name
+            }
+            let subId = null;
+            if(d.project){
+                subId = d.project.id
+            }
+            else if(d.id){
+                subId = d.id
+            }
+            let buildNameStr = null;
+            if(d.buildNumber){
+                buildNameStr = d.buildNumber
+            }
+            else if(d.name){
+                buildNameStr = d.name
             }
             return {
-                buildUrl,
-                buildNum: setBuildNum ? d.id : null,
-                result: d.result ? buildResult[d.result] : null,
-                buildNameStr: d.buildNumber ? d.buildNumber : d.name,
+                //duration: (d.startTime && d.finishTime) ? d.finishTime.getTime() - d.startTime.getTime() : null,
+                buildUrl: buildUrl,
+                buildNum: setBuildNum && d.id ? d.id : null,
                 duration: (d.startTime && d.finishTime) ? d.finishTime.getTime() - d.startTime.getTime() : null,
+                result: d.result ? buildResult[d.result] : null,
+                buildNameStr: buildNameStr,
+                
                 timestamp: d.startTime ? d.startTime.getTime() : null,
-                building: d.state !== 2 ? true : null,
-                subId: d.id,
-                azure: d
+                building: d.status && d.status !== 2 || d.state && d.state !== 2 ? true : null,
+                buildName: buildName,
+                subId: subId,
+                azure: d,
             };
         });
     }
+
 
     async getTimelineRecords(url, buildNum) {
         const { orgUrl, projectName } = this.getProjectInfo(url);
@@ -171,6 +206,18 @@ timestamp: 1584734443756
         const timeline = await buildApi.getBuildTimeline(projectName, buildNum);
         if (timeline) {
             return this.formatData(timeline.records);
+        }
+        return null;
+    }
+
+    // get the tasks from a build in a projects
+    async getTestTimelineRecords(url, buildNum) {
+        const { orgUrl, projectName } = this.getProjectInfo(url);
+        const buildApi = await this.getBuildApi(orgUrl, projectName);
+
+        const timeline = await buildApi.getBuildTimeline(projectName, buildNum);
+        if (timeline) {
+            return (timeline.records);
         }
         return null;
     }
@@ -190,6 +237,8 @@ timestamp: 1584734443756
 
     // set definitionId as buildName
     // https://dev.azure.com/adoptopenjdk/AdoptOpenJDK/_build?definitionId=3&_a=summary
+
+    // https://dev.azure.com/ms-juniper/Juniper/_build?definitionId=425
     getBuildInfoByUrl(buildUrl) {
         let tokens = buildUrl.split("?");
         let buildName = null;
@@ -207,9 +256,10 @@ timestamp: 1584734443756
 
     getToken(url) {
         let token = null;
-        if (this.credentails && this.credentails.hasOwnProperty(url)) {
-            token = encodeURIComponent(this.credentails[url].password);
-        }
+        // if (this.credentails && this.credentails.hasOwnProperty(url)) {
+        //     token = encodeURIComponent(this.credentails[url].password);
+        // }
+        token = 'x6jnbww5z532uu7qveddm2rcnyk7nzgy5rrscyibyvcrac26i6iq'
         return token;
     }
 
@@ -236,3 +286,14 @@ timestamp: 1584734443756
 }
 
 module.exports = Azure;
+
+
+
+//in getBuildInfo
+// const token = this.getToken(url);
+        // const { projectName, orgUrl } = this.getProjectInfo(url);
+        // const authHandler = azdev.getPersonalAccessTokenHandler(token);
+        // const connection = new azdev.WebApi(orgUrl, authHandler);
+
+        // const buildApi = await connection.getBuildApi();
+        // const timeline = await buildApi.getBuildTimeline(projectName, buildNum);

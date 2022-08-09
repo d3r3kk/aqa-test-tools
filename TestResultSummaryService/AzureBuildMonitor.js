@@ -7,7 +7,10 @@ const Azure = require(`./ciServers/Azure`);
 class AzureBuildMonitor {
     async execute(task, historyNum = 5) {
         let { buildUrl, type, streaming } = task;
-
+        buildUrl = "https://dev.azure.com/ms-juniper/Juniper/_build?definitionId=449"
+        //buildUrl = "https://dev.azure.com/helenxbc/AdoptOpenJDK/_build?definitionId=3"
+        streaming = "Yes"
+        type = "Test"
         const server = getCIProviderName(buildUrl);
         const ciServer = getCIProviderObj(server);
         const { buildName, url } = ciServer.getBuildInfoByUrl(buildUrl);
@@ -28,7 +31,7 @@ class AzureBuildMonitor {
         }
         // sort the allBuilds to make sure build number is in
         // descending order
-        allBuilds.sort((a, b) => parseInt(b.id) - parseInt(a.id));
+        allBuilds.sort((a, b) => parseInt(b.buildNum) - parseInt(a.buildNum));
         /*
          * Loop through allBuilds or past 5 builds (whichever is
          * less) to avoid OOM error. If there is not a match in db,
@@ -59,9 +62,13 @@ class AzureBuildMonitor {
                     status
                 });
                 // insert all records in Azure timeline
+                //const timelineRecs = await ciServer.getTestTimelineRecords(url, buildNum);
                 const timelineRecs = await ciServer.getTimelineRecords(url, buildNum);
+
                 const extraData = {status, url, buildName, buildNum, type: buildType};
+                
                 await this.insertBuilds(timelineRecs, null, parentId, extraData);
+                //await this.insertBuilds(timelineRecs, subId, parentId, extraData);
             } else {
                 break;
             }
@@ -70,6 +77,8 @@ class AzureBuildMonitor {
 
     getChildrenByParentId(recArray, id) {
         return recArray.filter(rec => rec.azure.parentId === id );
+
+        //return recArray.filter(rec => rec.parentId === id );
         // const children = recArray.map( rec => {
         //     if (!rec) {
         //         console.log("getChildrenByParentId !rec", rec);
@@ -86,6 +95,7 @@ class AzureBuildMonitor {
         // return children;
     }
 
+    // return the children task from parents recursively from top to bottom
     async insertBuilds(recArray, azureParentId, trssParentId, extraData) {
         console.log("insertBuilds recArray", recArray.length, azureParentId);
         if (!recArray || recArray.length === 0) return;
@@ -96,10 +106,15 @@ class AzureBuildMonitor {
                 ...child,
                 ...extraData,
             });
-            if (!child.subId) console.log("************error insertBuilds", child);
+            //if (!child.subId) console.log("************error insertBuilds", child);
+            if (!child.id) console.log("************error insertBuilds", child);
+
             await this.insertBuilds(recArray, child.subId, newTrssParentId, extraData);
+            //await this.insertBuilds(recArray, child.id, newTrssParentId, extraData);
         }
     }
+
+    //create build in test result and insert data into audit logs and 
     async insertData(data) {
         const _id = await new DataManager().createBuild(data);
         const { url, buildName, buildNum, status, buildNameStr, subId } = data;

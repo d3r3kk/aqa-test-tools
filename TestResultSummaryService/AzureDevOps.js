@@ -34,7 +34,7 @@ class AzureDevOps {
     async getAllBuilds(url, buildName) {
         // your collection url
         const orgUrl = "https://dev.azure.com/adoptopenjdk"; // TODO: Paramatrize
-        const token = "token value"; // TODO: Obtain PAT and paramaterize here.
+        const token = "x6jnbww5z532uu7qveddm2rcnyk7nzgy5rrscyibyvcrac26i6iq"; // TODO: Obtain PAT and paramaterize here.
         const authHandler = azdev.getPersonalAccessTokenHandler(token);
         const connection = new azdev.WebApi(orgUrl, authHandler);
 

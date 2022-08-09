@@ -402,7 +402,7 @@ export default class TopLevelBuildTable extends Component {
                     render: renderJenkinsLinks,
                 },
                 {
-                    title: 'Date',
+                    title: 'Date ',
                     dataIndex: 'date',
                     key: 'date',
                     sorter: (a, b) => {

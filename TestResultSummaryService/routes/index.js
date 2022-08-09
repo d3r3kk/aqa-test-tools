@@ -17,6 +17,7 @@ app.get('/getAllTestsWithHistory', wrap(require('./getAllTestsWithHistory')));
 app.get('/getApplicationTests', wrap(require('./getApplicationTests')));
 app.get('/getAuditLogs', wrap(require('./getAuditLogs')));
 app.get( '/getAzure', wrap( require( "./getAzure" ) ) );
+app.get( '/getAzure', wrap( require( "./getAzure" ) ) );
 app.get('/getBenchmarkMetricProps', wrap(require('./getBenchmarkMetricProps')));
 app.get('/getBuildHistory', wrap(require('./getBuildHistory')));
 app.get('/getBuildList', wrap(require('./getBuildList')));

@@ -73,7 +73,7 @@ export default class App extends Component {
                                 key="2"
                             >
                                 <Link to="/dashboard">
-                                    Test Results Summary Service
+                                    Test Results Summary Service  test lalalalala luuuu
                                 </Link>
                             </Menu.Item>
                         </Menu>

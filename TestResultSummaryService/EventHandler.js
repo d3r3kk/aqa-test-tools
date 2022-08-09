@@ -55,7 +55,7 @@ class EventHandler {
             logger.verbose(
                 `EventHandler: processBuild() is waiting for ${elapsedTime} secs before checking DB for builds != Done`
             );
-            await Promise.delay(elapsedTime * 1000);
+            await Promise.delay(1000);
         }
     }
 
@@ -79,7 +79,7 @@ class EventHandler {
                             } else {
                                 const server = getCIProviderName(buildUrl);
                                 if (server === "Azure") { // TODO: fix this to be more generic
-                                    const azureBuildMonitor = new AzureBuildMonitor();
+                                    //const azureBuildMonitor = new AzureBuildMonitor();
                                     await azureBuildMonitor.execute( task, 5 );
                                 } else { // TODO: there should be an analogous 'Jenkins' flow (or not any difference that depends on ciProvider)
                                     await buildMonitor.execute( task, 5 );
@@ -105,7 +105,7 @@ class EventHandler {
             logger.verbose(
                 `EventHandler: monitorBuild() is waiting for ${elapsedTime} secs`
             );
-            await Promise.delay(elapsedTime * 1000);
+            await Promise.delay(1000);
         }
     }
 }

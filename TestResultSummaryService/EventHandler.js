@@ -71,7 +71,7 @@ class EventHandler {
                         try {
                             const buildMonitor = new BuildMonitor();
                             // TODO: fix deleteOldBuilds 
-                            //await buildMonitor.deleteOldBuilds(task);
+                            await buildMonitor.deleteOldBuilds(task);
                             await buildMonitor.deleteOldAuditLogs();
                             const { buildUrl, type } = task;
                             if (!buildUrl || !type) {
@@ -79,8 +79,8 @@ class EventHandler {
                             } else {
                                 const server = getCIProviderName(buildUrl);
                                 if (server === "Azure") { // TODO: fix this to be more generic
-                                    //const azureBuildMonitor = new AzureBuildMonitor();
-                                    await azureBuildMonitor.execute( task, 5 );
+                                    const azureBuildMonitor = new AzureBuildMonitor();
+                                    //await azureBuildMonitor.execute( task, 5 );
                                 } else { // TODO: there should be an analogous 'Jenkins' flow (or not any difference that depends on ciProvider)
                                     await buildMonitor.execute( task, 5 );
                                 }

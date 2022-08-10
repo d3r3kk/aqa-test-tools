@@ -19,7 +19,10 @@ class BuildProcessor {
             tokens.pop();
             url = tokens.join('job');
         }
-        const buildInfo = await ciServer.getBuildInfo(task);
+        let task_input = [task.url, task.buildName, task.buildNum, task.subId]
+        //const buildInfo = await ciServer.getBuildInfo(task);
+        const buildInfo = await ciServer.getBuildInfo(task_input);
+
 
         if (buildInfo) {
             if (buildInfo.code === 404) {
@@ -109,7 +112,8 @@ class BuildProcessor {
                     }
                 }
             } else if (task.status === 'NotDone') {
-                await this.processBuild(task, buildInfo, jenkinsInfo);
+                //await this.processBuild(task, buildInfo, jenkinsInfo);
+                await this.processBuild(task, buildInfo, ciServer);
             } else if (task.status === 'CurrentBuildDone') {
                 // If all child nodes are done, set current node status to Done
                 const testResultsDB = new TestResultsDB();

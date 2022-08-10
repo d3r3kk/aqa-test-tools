@@ -73,9 +73,10 @@ export default class BuildDetail extends Component {
                     hasChildren: builds[i].hasChildren,
                 },
                 jenkinsBuild: {
-                    buildName: builds[i].buildName,
+                    buildName: builds[i].buildNameStr, // switched to buildNameStr
                     buildNum: builds[i].buildNum,
-                    buildUrl: builds[i].buildUrl,
+                    //buildUrl: builds[i].buildUrl,
+                    buildUrl: "https://dev.azure.com/ms-juniper/Juniper/_build/results?buildId=" + builds[i].buildNum + "&view=logs&s=" + builds[i].subId,
                     url: builds[i].url,
                 },
                 result: {

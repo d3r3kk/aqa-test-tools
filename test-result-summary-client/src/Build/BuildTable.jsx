@@ -83,13 +83,13 @@ export default class BuildTable extends Component {
                         {buildName} #{buildNum}
                     </a>
                     <br />
-                    <a
+                    {/* <a
                         href={blueOcean}
                         target="_blank"
                         rel="noopener noreferrer"
                     >
                         Blue Ocean
-                    </a>
+                    </a> */}
                 </div>
             );
         };

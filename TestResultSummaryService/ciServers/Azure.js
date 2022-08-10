@@ -83,21 +83,36 @@ result: "SUCCESS",
 timestamp: 1584734443756
      */
     async getAllBuilds(url, definition) {
-        // your collection url
-        // const orgUrl = "https://dev.azure.com/adoptopenjdk";
-
-        // const token = "token value";
-
         const { projectName, orgUrl } = this.getProjectInfo(url);
         const token = this.getToken(url);
         const authHandler = azdev.getPersonalAccessTokenHandler(token);
         const connection = new azdev.WebApi(orgUrl, authHandler);
 
         const buildApi = await connection.getBuildApi();
+        //definition: 449
+        //projectName: juniper
         const builds = await buildApi.getBuilds(projectName, [definition]);
         // console.log("getAllBuilds builds", builds)
         return this.formatData(builds, true, url);
     }
+
+    async getTriggeredBuildIds(url, buildNum){
+        // Get the build API of AzDo Rest API
+        const { orgUrl, projectName } = this.getProjectInfo(url);
+        const buildApi = await this.getBuildApi(orgUrl, projectName);
+
+        // Get all logs in a build with the name TriggerBuild
+        const logs = await buildApi.getBuildTimeline(projectName, buildNum)
+
+        console.log(logs)
+
+
+
+
+        
+        return [1, 2]
+    }
+
 
     streamToString(stream) {
         const chunks = []
@@ -125,6 +140,12 @@ timestamp: 1584734443756
 
     async getBuildInfo(task) {
         let [url, buildName, buildNum, subId] = task
+        // let url = task.url;
+        // let buildName = task.buildName;
+        // let buildNum = task.buildNum;
+        // let subId = task.subId;
+
+        //url: https::juniper buildName: 37852
         const records = await this.getTimelineRecords(url, buildNum);
         //return records
         if(subId){
@@ -190,7 +211,8 @@ timestamp: 1584734443756
                 buildNameStr: buildNameStr,
                 
                 timestamp: d.startTime ? d.startTime.getTime() : null,
-                building: d.status && d.status !== 2 || d.state && d.state !== 2 ? true : null,
+                //building: d.status && d.status !== 2 || d.state && d.state !== 2 ? true : null,
+                building: d.status && d.status !== 2 || d.state && d.state !== 2 ? true : false,
                 buildName: buildName,
                 subId: subId,
                 azure: d,
@@ -202,7 +224,7 @@ timestamp: 1584734443756
     async getTimelineRecords(url, buildNum) {
         const { orgUrl, projectName } = this.getProjectInfo(url);
         const buildApi = await this.getBuildApi(orgUrl, projectName);
-
+        //(Juniper, 39605)
         const timeline = await buildApi.getBuildTimeline(projectName, buildNum);
         if (timeline) {
             return this.formatData(timeline.records);
@@ -210,17 +232,17 @@ timestamp: 1584734443756
         return null;
     }
 
-    // get the tasks from a build in a projects
-    async getTestTimelineRecords(url, buildNum) {
-        const { orgUrl, projectName } = this.getProjectInfo(url);
-        const buildApi = await this.getBuildApi(orgUrl, projectName);
+    // // get the tasks from a build in a projects
+    // async getTestTimelineRecords(url, buildNum) {
+    //     const { orgUrl, projectName } = this.getProjectInfo(url);
+    //     const buildApi = await this.getBuildApi(orgUrl, projectName);
 
-        const timeline = await buildApi.getBuildTimeline(projectName, buildNum);
-        if (timeline) {
-            return (timeline.records);
-        }
-        return null;
-    }
+    //     const timeline = await buildApi.getBuildTimeline(projectName, buildNum);
+    //     if (timeline) {
+    //         return (timeline.records);
+    //     }
+    //     return null;
+    // }
 
     // async getLastBuildInfo(url, buildName) {
     //     const newUrl = this.addCredential(url);
@@ -259,7 +281,8 @@ timestamp: 1584734443756
         // if (this.credentails && this.credentails.hasOwnProperty(url)) {
         //     token = encodeURIComponent(this.credentails[url].password);
         // }
-        token = 'x6jnbww5z532uu7qveddm2rcnyk7nzgy5rrscyibyvcrac26i6iq'
+        
+
         return token;
     }
 

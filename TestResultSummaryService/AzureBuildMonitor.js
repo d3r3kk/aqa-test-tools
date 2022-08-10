@@ -7,8 +7,7 @@ const Azure = require(`./ciServers/Azure`);
 class AzureBuildMonitor {
     async execute(task, historyNum = 5) {
         let { buildUrl, type, streaming } = task;
-        buildUrl = "https://dev.azure.com/ms-juniper/Juniper/_build?definitionId=449"
-        //buildUrl = "https://dev.azure.com/helenxbc/AdoptOpenJDK/_build?definitionId=3"
+        buildUrl = "https://dev.azure.com/ms-juniper/Juniper/_build?definitionId=506"
         streaming = "Yes"
         type = "Test"
         const server = getCIProviderName(buildUrl);
@@ -43,11 +42,21 @@ class AzureBuildMonitor {
         const limit = Math.min(historyNum, allBuilds.length);
         const testResults = new TestResultsDB();
         for (let i = 0; i < limit; i++) {
-            //("buildNum ", allBuilds[i]);
+           
             const buildNum = parseInt(allBuilds[i].buildNum, 10);
+            
+            // Get the triggered build from a build pipelines by parsing the log
+            const triggeredBuildIds = await ciServer.getTriggeredBuildIds(url, buildNum);
+
+
+
+
+
+ 
             const buildsInDB = await testResults.getData({ url, buildName, buildNum }).toArray();
             if (!buildsInDB || buildsInDB.length === 0) {
-                let status = "NotDone";
+                //let status = "NotDone";
+                let status = "Done";
                 if (streaming === "Yes" && allBuilds[i].result === null) {
                     status = "Streaming";
                     logger.info(`Set build ${url} ${buildName} ${buildNum} status to Streaming `);
@@ -62,7 +71,7 @@ class AzureBuildMonitor {
                     status
                 });
                 // insert all records in Azure timeline
-                //const timelineRecs = await ciServer.getTestTimelineRecords(url, buildNum);
+                //(39605, https:../Juniper)
                 const timelineRecs = await ciServer.getTimelineRecords(url, buildNum);
 
                 const extraData = {status, url, buildName, buildNum, type: buildType};

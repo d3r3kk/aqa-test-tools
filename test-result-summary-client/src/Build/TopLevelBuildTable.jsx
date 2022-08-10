@@ -46,7 +46,8 @@ export default class TopLevelBuildTable extends Component {
             date: build.timestamp
                 ? new Date(build.timestamp).toLocaleString()
                 : null,
-            startBy: build.startBy ? build.startBy : 'N/A',
+            //startBy: build.startBy ? build.startBy : 'N/A',
+            startBy: build.azure.requestedFor.displayName ? build.azure.requestedFor.displayName : 'N/A',
             jenkins: build,
             keepForever: build.keepForever ? build.keepForever : false,
         }));
@@ -110,14 +111,7 @@ export default class TopLevelBuildTable extends Component {
             const renderFvTestBuild = (value) => {
                 if (value && value.buildNum) {
                     let icon = '';
-                    if (value.status !== 'Done') {
-                        icon = (
-                            <LoadingOutlined
-                                style={{ fontSize: 16, color: '#DAA520' }}
-                            />
-                        );
-                        value.buildResult = 'PROGRESSING';
-                    } else if (value.buildResult === 'SUCCESS') {
+                    if (value.buildResult === 'SUCCESS') {
                         icon = (
                             <CheckOutlined
                                 style={{ fontSize: 16, color: '#2cbe4e' }}
@@ -129,6 +123,13 @@ export default class TopLevelBuildTable extends Component {
                                 style={{ fontSize: 16, color: '#f50' }}
                             />
                         );
+                    } else if (value.status !== 'Done' ) {
+                        icon = (
+                            <LoadingOutlined
+                                style={{ fontSize: 16, color: '#DAA520' }}
+                            />
+                        );
+                        value.buildResult = 'PROGRESSING';
                     } else {
                         icon = (
                             <InfoOutlined
@@ -262,13 +263,13 @@ export default class TopLevelBuildTable extends Component {
                             {buildName} #{buildNum}
                         </a>
                         <br />
-                        <a
+                        {/* <a
                             href={blueOcean}
                             target="_blank"
                             rel="noopener noreferrer"
                         >
                             Blue Ocean
-                        </a>
+                        </a> */}
                     </div>
                 );
             };
@@ -396,7 +397,8 @@ export default class TopLevelBuildTable extends Component {
                     },
                 },
                 {
-                    title: 'Jenkins Link',
+                    //title: 'Jenkins Link',
+                    title: 'Azure Devops Link',
                     dataIndex: 'jenkins',
                     key: 'jenkins',
                     render: renderJenkinsLinks,

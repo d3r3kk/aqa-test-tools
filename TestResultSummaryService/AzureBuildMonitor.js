@@ -7,7 +7,7 @@ const Azure = require(`./ciServers/Azure`);
 class AzureBuildMonitor {
     async execute(task, historyNum = 5) {
         let { buildUrl, type, streaming } = task;
-        buildUrl = "https://dev.azure.com/ms-juniper/Juniper/_build?definitionId=506"
+        buildUrl = "https://dev.azure.com/ms-juniper/Juniper/_build?definitionId=429"
         streaming = "Yes"
         type = "Test"
         const server = getCIProviderName(buildUrl);
@@ -41,7 +41,7 @@ class AzureBuildMonitor {
          */
         const limit = Math.min(historyNum, allBuilds.length);
         const testResults = new TestResultsDB();
-        for (let i = 0; i < limit; i++) {
+        for (let i = 1; i < limit; i++) {
            
             const buildNum = parseInt(allBuilds[i].buildNum, 10);
             

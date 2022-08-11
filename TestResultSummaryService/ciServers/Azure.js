@@ -96,22 +96,52 @@ timestamp: 1584734443756
         return this.formatData(builds, true, url);
     }
 
+    async extractTriggeredBuildIds(output) {
+        let m;
+        let tIds = [];
+        //const tIdRegex = /Following Builds will be awaited:([\s\S]+)([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2})/;
+        const tIdRegex = /buildId=([0-9]{5})/
+        if ((m = tIdRegex.exec(output)) !== null) {
+            console.log(m[1])
+            tIds.push(m[1].trim());
+        }
+        return tIds;
+    }
+
     async getTriggeredBuildIds(url, buildNum){
         // Get the build API of AzDo Rest API
         const { orgUrl, projectName } = this.getProjectInfo(url);
         const buildApi = await this.getBuildApi(orgUrl, projectName);
 
         // Get all logs in a build with the name TriggerBuild
-        const logs = await buildApi.getBuildTimeline(projectName, buildNum)
+        const logs = await buildApi.getBuildTimeline(projectName, buildNum);
+        
+        var results = [];
 
-        console.log(logs)
-
-
-
+        if(logs.records){
+            for (let azure of logs.records)
+            {
+                if (azure.type && azure.type == "Task" && 
+                (azure.name && azure.name == "TriggerBuild" || 
+                azure.name && azure.name.includes("trigger"))) {
+                    let output = await this.getBuildOutput({url, buildNum, azure});
+                    if(output){
+                        let tid_items = await this.extractTriggeredBuildIds(output)
+                        results.push(...tid_items)
+                    }
+                }
+            }
+        }
 
         
+
+
+        console.log(results)
+        return results
+
         return [1, 2]
     }
+
 
 
     streamToString(stream) {
@@ -281,6 +311,8 @@ timestamp: 1584734443756
         // if (this.credentails && this.credentails.hasOwnProperty(url)) {
         //     token = encodeURIComponent(this.credentails[url].password);
         // }
+        
+
         
 
         return token;

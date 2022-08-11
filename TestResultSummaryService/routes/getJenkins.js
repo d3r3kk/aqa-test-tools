@@ -19,7 +19,7 @@ module.exports = async (req, res) => {
         //let { url, type, streaming } = task;
         const azureBuildMonitor = new AzureBuildMonitor();
         //await azureBuildMonitor.execute( task, 5 );
-       await azureBuildMonitor.execute( [url, type, streaming], 1 );
+       await azureBuildMonitor.execute( [url, type, streaming], 2 );
     }
     const ciServer = getCIProviderObj(server);
     try {

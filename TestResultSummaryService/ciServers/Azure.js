@@ -9,6 +9,7 @@ const CIServer = require('./CIServer');
 const fs = require('fs');
 const { url } = require('inspector');
 const e = require('express');
+const { Z_BUF_ERROR } = require('zlib');
 
 const options = { request: { timeout: 2000 } };
 
@@ -121,25 +122,19 @@ timestamp: 1584734443756
         if(logs.records){
             for (let azure of logs.records)
             {
-                if (azure.type && azure.type == "Task" && 
+                if ((azure.type && azure.type == "Task") && 
                 (azure.name && azure.name == "TriggerBuild" || 
                 azure.name && azure.name.includes("trigger"))) {
                     let output = await this.getBuildOutput({url, buildNum, azure});
                     if(output){
+                        //const res = azure.result;
                         let tid_items = await this.extractTriggeredBuildIds(output)
                         results.push(...tid_items)
                     }
                 }
             }
         }
-
-        
-
-
-        console.log(results)
         return results
-
-        return [1, 2]
     }
 
 
@@ -232,12 +227,22 @@ timestamp: 1584734443756
             else if(d.name){
                 buildNameStr = d.name
             }
+
+            let type = "Test"
+            let hasChildren = false
+            if(d.type){
+                if(d.type == "Stage" || d.type == "Phase") {
+                    type = "Build" 
+                    hasChildren = true
+                }
+            }
             return {
                 //duration: (d.startTime && d.finishTime) ? d.finishTime.getTime() - d.startTime.getTime() : null,
                 buildUrl: buildUrl,
                 buildNum: setBuildNum && d.id ? d.id : null,
                 duration: (d.startTime && d.finishTime) ? d.finishTime.getTime() - d.startTime.getTime() : null,
-                result: d.result ? buildResult[d.result] : null,
+                //result: d.result ? buildResult[d.result] : null,
+                buildResult: d.result ? buildResult[d.result] : null,
                 buildNameStr: buildNameStr,
                 
                 timestamp: d.startTime ? d.startTime.getTime() : null,
@@ -245,6 +250,8 @@ timestamp: 1584734443756
                 building: d.status && d.status !== 2 || d.state && d.state !== 2 ? true : false,
                 buildName: buildName,
                 subId: subId,
+                type: type,
+                hasChildren: hasChildren,
                 azure: d,
             };
         });

@@ -59,6 +59,7 @@ export default class BuildDetail extends Component {
 
         const childBuildsDataSource = [];
         for (let i = 0; i < builds.length; i++) {
+            // Data from the DB get placed into what get rendered in the frontend
             childBuildsDataSource.push({
                 key: i,
                 buildData: {
@@ -70,7 +71,7 @@ export default class BuildDetail extends Component {
                     buildResult: builds[i].buildResult,
                     buildUrl: builds[i].buildUrl,
                     type: builds[i].type,
-                    hasChildren: builds[i].hasChildren,
+                    hasChildren: builds[i].hasChildren, // Add has children into database 
                 },
                 jenkinsBuild: {
                     buildName: builds[i].buildNameStr, // switched to buildNameStr

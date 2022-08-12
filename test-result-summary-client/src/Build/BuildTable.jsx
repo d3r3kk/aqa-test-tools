@@ -95,12 +95,14 @@ export default class BuildTable extends Component {
         };
 
         const renderBuildName = (value, row, index) => {
+            console.log(value.buildResult)
             const resultColor =
                 value.buildResult === 'SUCCESS'
                     ? '#2cbe4e'
                     : value.buildResult === 'FAILURE'
                     ? '#f50'
                     : '#DAA520';
+            // decide on all test info/build detail
             if (value.type === 'Build') {
                 if (value.hasChildren) {
                     return (

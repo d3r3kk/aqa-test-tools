@@ -101,6 +101,8 @@ export default class BuildTable extends Component {
                     ? '#2cbe4e'
                     : value.buildResult === 'FAILURE'
                     ? '#f50'
+                    : value.buildResult === 'SKIPPED'
+                    ? '#6b6360'
                     : '#DAA520';
             // decide on all test info/build detail
             if (value.type === 'Build') {
@@ -163,6 +165,8 @@ export default class BuildTable extends Component {
                                 ? '#2cbe4e'
                                 : buildResult === 'FAILURE'
                                 ? '#f50'
+                                : buildResult === 'SKIPPED'
+                                ? '#6b6360'
                                 : '#DAA520',
                     }}
                 >

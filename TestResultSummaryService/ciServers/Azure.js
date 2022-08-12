@@ -35,9 +35,11 @@ const retry = fn => {
 // match Azure BuildResult to TRSS build result
 // For Azure code, please check azure-devops-node-api/interfaces/BuildInterfaces.d.ts
 const buildResult = {
-    0: null,  // None
+    //0: null,  // None
+    0: "SUCCESS",
     2: "SUCCESS",
-    4: "FAILURE",  // PartiallySucceeded
+    //4: "FAILURE",  // PartiallySucceeded
+    4: "SKIPPED",  // PartiallySucceeded
     8: "FAILURE",
     32: "ABORT"  // Canceled
 };
@@ -236,13 +238,20 @@ timestamp: 1584734443756
                     hasChildren = true
                 }
             }
+
+            let result = null
+            console.log(d.result)
+            if(d.result != null)
+            {
+                result = buildResult[d.result]
+            }
             return {
-                //duration: (d.startTime && d.finishTime) ? d.finishTime.getTime() - d.startTime.getTime() : null,
                 buildUrl: buildUrl,
                 buildNum: setBuildNum && d.id ? d.id : null,
                 duration: (d.startTime && d.finishTime) ? d.finishTime.getTime() - d.startTime.getTime() : null,
                 //result: d.result ? buildResult[d.result] : null,
-                buildResult: d.result ? buildResult[d.result] : null,
+                //buildResult: d.result ? buildResult[d.result] : null,
+                buildResult: result,
                 buildNameStr: buildNameStr,
                 
                 timestamp: d.startTime ? d.startTime.getTime() : null,
@@ -269,17 +278,6 @@ timestamp: 1584734443756
         return null;
     }
 
-    // // get the tasks from a build in a projects
-    // async getTestTimelineRecords(url, buildNum) {
-    //     const { orgUrl, projectName } = this.getProjectInfo(url);
-    //     const buildApi = await this.getBuildApi(orgUrl, projectName);
-
-    //     const timeline = await buildApi.getBuildTimeline(projectName, buildNum);
-    //     if (timeline) {
-    //         return (timeline.records);
-    //     }
-    //     return null;
-    // }
 
     // async getLastBuildInfo(url, buildName) {
     //     const newUrl = this.addCredential(url);
@@ -318,6 +316,7 @@ timestamp: 1584734443756
         // if (this.credentails && this.credentails.hasOwnProperty(url)) {
         //     token = encodeURIComponent(this.credentails[url].password);
         // }
+        
         
 
         

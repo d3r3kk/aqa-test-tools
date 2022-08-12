@@ -46,8 +46,8 @@ class AzureBuildMonitor {
             const buildNum = parseInt(allBuilds[i].buildNum, 10);
             
             // Get the triggered build from a build pipelines by parsing the log
-            const triggeredBuildIds = await ciServer.getTriggeredBuildIds(url, buildNum);
-            console.log(triggeredBuildIds)
+            //const triggeredBuildIds = await ciServer.getTriggeredBuildIds(url, buildNum);
+            //console.log(triggeredBuildIds)
 
 
 

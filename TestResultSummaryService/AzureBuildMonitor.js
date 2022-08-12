@@ -47,7 +47,7 @@ class AzureBuildMonitor {
             
             // Get the triggered build from a build pipelines by parsing the log
             const triggeredBuildIds = await ciServer.getTriggeredBuildIds(url, buildNum);
-
+            console.log(triggeredBuildIds)
 
 
 
@@ -62,19 +62,20 @@ class AzureBuildMonitor {
                     logger.info(`Set build ${url} ${buildName} ${buildNum} status to Streaming `);
                 }
 
-                const buildType = type === "FVT" ? "Test" : type;
+                //const buildType = type === "FVT" ? "Test" : type;
 
                 const parentId = await this.insertData({
                     url,
                     ...allBuilds[i],
-                    type: buildType,
+                    //type: buildType,
                     status
                 });
                 // insert all records in Azure timeline
                 //(39605, https:../Juniper)
                 const timelineRecs = await ciServer.getTimelineRecords(url, buildNum);
 
-                const extraData = {status, url, buildName, buildNum, type: buildType};
+                //const extraData = {status, url, buildName, buildNum, type: buildType};
+                const extraData = {status, url, buildName, buildNum};
                 
                 await this.insertBuilds(timelineRecs, null, parentId, extraData);
                 //await this.insertBuilds(timelineRecs, subId, parentId, extraData);

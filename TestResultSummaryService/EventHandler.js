@@ -55,7 +55,7 @@ class EventHandler {
             logger.verbose(
                 `EventHandler: processBuild() is waiting for ${elapsedTime} secs before checking DB for builds != Done`
             );
-            await Promise.delay(1000);
+            await Promise.delay(elapsedTime * 1000);
         }
     }
 
@@ -65,7 +65,7 @@ class EventHandler {
             try {
                 const testResults = new BuildListDB();
                 let tasks = await testResults.getData().toArray();
-                tasks = tasks.filter((task) => task.monitoring === 'Yes');
+                //tasks = tasks.filter((task) => task.monitoring === 'Yes');
                 if (tasks && tasks.length > 0) {
                     for (let task of tasks) {
                         try {

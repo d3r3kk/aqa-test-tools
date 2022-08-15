@@ -5,7 +5,7 @@ const ObjectID = require('mongodb').ObjectID;
 const { TestResultsDB, OutputDB, AuditLogsDB } = require('./Database');
 const { logger } = require('./Utils');
 const plugins = require('./plugins');
-const { getCIProviderName, getCIProviderObj } = require(`./ciServers/`);
+const { getCIProviderName, getCIProviderObj } = require(`./ciServers`);
 
 class BuildProcessor {
     async execute(task) {
@@ -146,10 +146,10 @@ class BuildProcessor {
         // else if no timestamp or buildUrl, update the record in db.
         // Otherwise, do nothing.
         if (buildInfo && !buildInfo.building && buildInfo.result !== null) {
-            task.timestamp = buildInfo.timestamp;
+            task.timestamp = buildInfo[0].timestamp;
             task.buildUrl = buildInfo.url;
-            task.buildDuration = buildInfo.duration;
-            task.buildResult = buildInfo.result;
+            task.buildDuration = buildInfo[0].duration;
+            task.buildResult = buildInfo[0].buildResult;
             task.status = 'CurrentBuildDone';
             let output = '';
             let msg = 'updateBuildWithOutput';

@@ -152,8 +152,7 @@ timestamp: 1584734443756
 
     async getBuildOutput(task) {
         const { url, buildNum, azure } = task;
-        // TODO
-        // azure is empty? why?
+        
         if (!azure) console.log("getBuildOutput there is no azure", task);
         if (azure && azure.log && azure.log.id) {
             const { orgUrl, projectName } = this.getProjectInfo(url);
@@ -234,7 +233,7 @@ timestamp: 1584734443756
             let hasChildren = false
             if(d.type){
                 if(d.type == "Stage" || d.type == "Phase") {
-                    type = "Build" 
+                    type = 'Build';
                     hasChildren = true
                 }
             }

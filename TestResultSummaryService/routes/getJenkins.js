@@ -1,6 +1,8 @@
 const { getCIProviderName, getCIProviderObj } = require(`../ciServers/`);
 const AzureBuildMonitor = require( '../AzureBuildMonitor' );
 const fs = require('fs');
+//const BuildProcessor = require('./BuildProcessor');
+const AzureEventHandler = require('../AzureEventHandler')
 
 module.exports = async (req, res) => {
     const { url, buildName } = req.query;
@@ -13,14 +15,18 @@ module.exports = async (req, res) => {
         subId = req.query.subId
     }
     const server = getCIProviderName(url);
-    if (server === "Azure") { // TODO: fix this to be more generic
-        const type = "Test";
-        const streaming = "Yes";
-        //let { url, type, streaming } = task;
-        const azureBuildMonitor = new AzureBuildMonitor();
-        //await azureBuildMonitor.execute( task, 5 );
-       await azureBuildMonitor.execute( [url, type, streaming], 2 );
-    }
+    // if (server === "Azure") { // TODO: fix this to be more generic
+    //     const type = "Test";
+    //     const streaming = "Yes";
+    //     //let { url, type, streaming } = task;
+    //     const azureBuildMonitor = new AzureBuildMonitor();
+    //     //await azureBuildMonitor.execute( task, 5 );
+    //    await azureBuildMonitor.execute( [url, type, streaming], 3 );
+    // }
+
+    const handler = new AzureEventHandler();
+    handler.processBuild();
+
     const ciServer = getCIProviderObj(server);
     try {
         const output = await ciServer.getBuildInfo([url, buildName, req.query.buildNum, subId]);

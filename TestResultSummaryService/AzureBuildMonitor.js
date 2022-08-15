@@ -41,7 +41,7 @@ class AzureBuildMonitor {
          */
         const limit = Math.min(historyNum, allBuilds.length);
         const testResults = new TestResultsDB();
-        for (let i = 1; i < limit; i++) {
+        for (let i = 2; i < limit; i++) {
            
             const buildNum = parseInt(allBuilds[i].buildNum, 10);
             
@@ -55,8 +55,8 @@ class AzureBuildMonitor {
  
             const buildsInDB = await testResults.getData({ url, buildName, buildNum }).toArray();
             if (!buildsInDB || buildsInDB.length === 0) {
-                //let status = "NotDone";
-                let status = "Done";
+                let status = "NotDone";
+                //let status = "Done";
                 if (streaming === "Yes" && allBuilds[i].result === null) {
                     status = "Streaming";
                     logger.info(`Set build ${url} ${buildName} ${buildNum} status to Streaming `);

@@ -5,34 +5,35 @@ const {
     AuditLogsDB,
 } = require('./Database');
 const ObjectID = require('mongodb').ObjectID;
-const Parsers = require(`./parsers/`);
-const DefaultParser = require(`./parsers/Default`);
+//const Parsers = require(`./parsers`);
+//const DefaultParser = require(`./parsers/Default`);
 const { logger } = require('./Utils');
 const Utils = require('./parsers/Utils');
 
 class DataManager {
-    findParserType(buildName, output) {
-        const keys = Object.keys(Parsers);
-        for (let i = 0; i < keys.length; i++) {
-            const type = keys[i];
-            if (Parsers[type].canParse(buildName, output)) {
-                return type;
-            }
-        }
-    }
+    // findParserType(buildName, output) {
+    //     const keys = Object.keys(Parsers);
+    //     for (let i = 0; i < keys.length; i++) {
+    //         const type = keys[i];
+    //         if (Parsers[type].canParse(buildName, output)) {
+    //             return type;
+    //         }
+    //     }
+    // }
 
-    async parseOutput(buildName, output) {
-        let parserType = this.findParserType(buildName, output);
-        let parser;
-        if (parserType) {
-            parser = new Parsers[parserType](buildName);
-        } else {
-            parser = new DefaultParser();
-            parserType = 'Default';
-        }
-        const obj = await parser.parse(output);
-        return { parserType, ...obj };
-    }
+    // async parseOutput(buildName, output) {
+    //     let parserType = this.findParserType(buildName, output);
+    //     let parser;
+    //     if (parserType) {
+    //         parser = new Parsers[parserType](buildName);
+    //     } else {
+    //         parser = new DefaultParser();
+    //         parserType = 'Default';
+    //     }
+    //     const obj = await parser.parse(output);
+    //     return { parserType, ...obj };
+    // }
+    
     //OutputDB: the logs
     async updateOutput(data) {
         let { id, output } = data;

@@ -10,7 +10,7 @@ const ObjectID = require('mongodb').ObjectID;
 const { logger } = require('./Utils');
 const Utils = require('./parsers/Utils');
 
-class DataManager {
+class AzureDataManager {
     // findParserType(buildName, output) {
     //     const keys = Object.keys(Parsers);
     //     for (let i = 0; i < keys.length; i++) {
@@ -21,19 +21,44 @@ class DataManager {
     //     }
     // }
 
-    // async parseOutput(buildName, output) {
-    //     let parserType = this.findParserType(buildName, output);
-    //     let parser;
-    //     if (parserType) {
-    //         parser = new Parsers[parserType](buildName);
-    //     } else {
-    //         parser = new DefaultParser();
-    //         parserType = 'Default';
-    //     }
-    //     const obj = await parser.parse(output);
-    //     return { parserType, ...obj };
-    // }
-    
+    async parseOutput(buildName, testData) {
+        const tests = [];
+        for (let test of testData)
+        {
+            let testName = test.buildNameStr ? test.buildNameStr : null
+            let testResult = test.buildResult? test.buildResult : 'FAILED';
+            let testOutputId = test.azure.id? test.azure.id: null;
+            let duration = test.duration ? test.duration: null;
+            let startTime = test.timestamp ? test.timestamp : null;
+            let testOutput = test.output ? test.output : null;
+            let machine = test.azure.workerName ? test.azure.workerName : null;
+
+            tests.push({
+                testName:testName,
+                testOutputId: testOutputId,
+                testOutput: testResult ? testOutput : output,
+                testResult: testResult ? 'PASSED' : 'FAILED',
+                testData: null,
+                duration: duration,
+                startTime: startTime,
+            });
+        }
+        let machine = null;
+        if(testData[0].azure && testData[0].azure.workerName)
+            machine = testData[0].azure.workerName
+        //let machine = testData[0].azure.workerName ? testsData[0].azure.workerName : null;
+
+        
+        return {
+            tests,
+            //buildResults: testResult ? 'SUCCESS' : 'FAILURE',
+            machine: machine,
+            //type: 'JCK',
+            //startBy: startTime,
+            //artifactory: this.extractArtifact(output),
+        };
+    }
+
     //OutputDB: the logs
     async updateOutput(data) {
         let { id, output } = data;
@@ -113,15 +138,27 @@ class DataManager {
         const result = await testResults.update(criteria, { $set: newData });
     }
 
+    // Add test information
     async updateBuildWithOutput(data) {
         logger.verbose('updateBuildWithOutput', data.buildName, data.buildNum);
+        const testResults = new TestResultsDB();
         const { _id, buildName, output, rootBuildId, ...newData } = data;
+
+        let testInput = []
+        //if the task is job  
+        if (data.azure && data.azure.type && data.azure.type == 'Job'){
+            // Fetch tests from database with this job as parent
+            testInput = await testResults.getChildrenByParentId(_id)
+        }
+
+        // Get the test details of each tests
         const criteria = { _id: new ObjectID(_id) };
         const { builds, tests, build, ...value } = await this.parseOutput(
             buildName,
-            output
+            //output
+            testInput
         );
-        const testResults = new TestResultsDB();
+        
         const outputDB = new OutputDB();
         let update = {
             ...newData,
@@ -231,4 +268,4 @@ class DataManager {
     }
 }
 
-module.exports = DataManager;
+module.exports = AzureDataManager;

@@ -1,7 +1,6 @@
 const { getCIProviderName, getCIProviderObj } = require(`../ciServers/`);
 const AzureBuildMonitor = require( '../AzureBuildMonitor' );
 const fs = require('fs');
-//const BuildProcessor = require('./BuildProcessor');
 const AzureEventHandler = require('../AzureEventHandler')
 
 module.exports = async (req, res) => {
@@ -28,13 +27,13 @@ module.exports = async (req, res) => {
     handler.processBuild();
 
     const ciServer = getCIProviderObj(server);
-    try {
-        const output = await ciServer.getBuildInfo([url, buildName, req.query.buildNum, subId]);
-        const filename = "./output_getBuildInfo_" + Math.random();
-        fs.writeFileSync(filename, JSON.stringify(output));
-        res.send({ result: filename });
-    } catch (e) {
-        console.log(e)
-        res.send({ result: e.toString() });
-    }
+    // try {
+    //     const output = await ciServer.getBuildInfo([url, buildName, req.query.buildNum, subId]);
+    //     const filename = "./output_getBuildInfo_" + Math.random();
+    //     fs.writeFileSync(filename, JSON.stringify(output));
+    //     res.send({ result: filename });
+    // } catch (e) {
+    //     console.log(e)
+    //     res.send({ result: e.toString() });
+    // }
 };

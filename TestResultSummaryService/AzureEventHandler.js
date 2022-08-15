@@ -11,7 +11,7 @@ const elapsed = [2 * 60, 5 * 60, 30 * 60];
  * EventHandler processes builds that have status != Done
  * Once all builds are in status Done, it delays the process based on the time in elapsed array
  */
-class EventHandler {
+class AzureEventHandler {
     async processBuild() {
         let count = 0;
         // break if all builds are done for consecutively 5 queries
@@ -31,7 +31,8 @@ class EventHandler {
                 for (let task of tasks) {
                     try {
                         const azureBuildProcessor = new AzureBuildProcessor();
-                        await azureBuildProcessor.execute(task);
+                        //205 is a job
+                        await azureBuildProcessor.execute(tasks[205]);
                     } catch (e) {
                         logger.error('Exception in BuildProcessor: ', e);
                         await new AuditLogsDB().insertAuditLogs({
@@ -42,7 +43,8 @@ class EventHandler {
                     logger.debug(
                         'EventHandler: processBuild() is waiting for 2 secs before processing the next build'
                     );
-                    await Promise.delay(2 * 1000);
+                    //await Promise.delay(2 * 1000);
+                    await Promise.delay(1000*1000);
                 }
             } catch (e) {
                 logger.error('Exception in database query: ', e);
@@ -109,4 +111,4 @@ class EventHandler {
         }
     }
 }
-module.exports = EventHandler;
+module.exports = AzureEventHandler;

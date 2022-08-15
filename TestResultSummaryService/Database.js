@@ -200,6 +200,17 @@ class Database {
         return -1;
     }
 
+    async getChildrenByParentId(id){
+        const _id = new ObjectID(id);
+        const info = {_id};
+        const result = await this.aggregate([
+            { $match: {parentId: _id}},
+            
+        ])
+        console.log(result)
+        return result
+    }
+
     async getAvgDuration(info) {
         const {
             matchQuery = {},

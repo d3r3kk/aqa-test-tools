@@ -86,6 +86,10 @@ export default class Output extends Component {
                                 color:
                                     data.result === 'PASSED'
                                         ? '#2cbe4e'
+                                        //: 'SUCCESS' 
+                                        //? '#2cbe4e'
+                                        //: 'SKIPPED'
+                                        //? '#808080'
                                         : '#f50',
                             }}
                         >

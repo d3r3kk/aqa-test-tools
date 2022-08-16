@@ -69,10 +69,11 @@ export default class BuildTreeView extends Component {
                         }}
                         style={{
                             color: build.buildResult === 'SUCCESS' ? '#2cbe4e'
-                                : build.buildResult === 'FAILURE' ? '#f50' : '#DAA520',
+                                : build.buildResult === 'FAILURE' ? '#f50' 
+                                : build.buildResult === 'SKIPPED' ? '#808080': '#DAA520',
                         }}
                     >
-                        {build.buildName}{' '}#{build.buildNum}
+                        {build.buildNameStr} {/*{' '}#{build.buildNum}*/}
                     </Link>
                 </div>
             )

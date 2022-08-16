@@ -1,7 +1,8 @@
 const { TestResultsDB, ObjectID } = require('../Database');
 module.exports = async (req, res) => {
     let { buildId, limit } = req.query;
-    if (!limit) limit = 5;
+    //if (!limit) limit = 5;
+    if (!limit) limit = 1;
     const db = new TestResultsDB();
     let query = await db.getSpecificData(
         { _id: buildId },

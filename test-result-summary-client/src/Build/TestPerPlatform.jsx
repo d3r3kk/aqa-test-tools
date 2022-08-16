@@ -94,6 +94,8 @@ export default class TestPerPlatform extends Component {
                                     ? '#2cbe4e'
                                     : value.testResult === 'FAILED'
                                     ? '#f50'
+                                    : value.testResult === 'SKIPPED'
+                                    ? '#808080'
                                     : '#DAA520',
                         }}
                     >

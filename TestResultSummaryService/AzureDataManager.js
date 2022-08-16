@@ -20,27 +20,55 @@ class AzureDataManager {
     //         }
     //     }
     // }
-
+    async getTestSummary(test)
+    {
+        
+        let total = 0;
+        let executed = 0;
+        let passed = 0;
+        let failed = 0;
+        let skipped = 0;
+        let disabled = 0;
+        const summaryRegex =
+            /\S*\s*?TOTAL:\s*([0-9]*)\s*EXECUTED:\s*([0-9]*)\s*PASSED:\s*([0-9]*)\s*FAILED:\s*([0-9]*)\s*DISABLED:\s*([0-9]*)\s*SKIPPED:\s*([0-9]*)\s*/;
+        if ((m = summaryRegex.exec(output)) !== null) {
+            total = parseInt(m[1], 10);
+            executed = parseInt(m[2], 10);
+            passed = parseInt(m[3], 10);
+            failed = parseInt(m[4], 10);
+            disabled = parseInt(m[5], 10);
+            skipped = parseInt(m[6], 10);
+        }
+        return { total, executed, passed, failed, disabled, skipped }
+    }
     async parseOutput(buildName, testData) {
         const tests = [];
         for (let test of testData)
         {
             let testName = test.buildNameStr ? test.buildNameStr : null
-            let testResult = test.buildResult? test.buildResult : 'FAILED';
+            let testResult = 'N/A';
+            if(test.buildResult)
+            {
+                if(test.buildResult == 'SUCCESS'){
+                    testResult = 'PASSED';
+                }
+                else{testResult = test.buildResult;}
+            }
             let testOutputId = test.azure.id? test.azure.id: null;
             let duration = test.duration ? test.duration: null;
             let startTime = test.timestamp ? test.timestamp : null;
             let testOutput = test.output ? test.output : null;
-            let machine = test.azure.workerName ? test.azure.workerName : null;
+            
 
             tests.push({
                 testName:testName,
                 testOutputId: testOutputId,
                 testOutput: testResult ? testOutput : output,
-                testResult: testResult ? 'PASSED' : 'FAILED',
+                testResult: testResult,
                 testData: null,
                 duration: duration,
                 startTime: startTime,
+                //machine: machine,
             });
         }
         let machine = null;

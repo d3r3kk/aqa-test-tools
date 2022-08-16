@@ -80,7 +80,7 @@ export default class BuildTable extends Component {
                         target="_blank"
                         rel="noopener noreferrer"
                     >
-                        {buildName} #{buildNum}
+                        {buildName} {/*#{buildNum}*/}
                     </a>
                     <br />
                     {/* <a
@@ -175,6 +175,7 @@ export default class BuildTable extends Component {
             );
         };
 
+        // The test result detail numbers
         const renderResultDetail = (testSummary) => {
             let resultDetail = 'n/a';
             if (testSummary) {

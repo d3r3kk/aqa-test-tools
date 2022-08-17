@@ -7,7 +7,7 @@ const Azure = require(`./ciServers/Azure`);
 class AzureBuildMonitor {
     async execute(task, historyNum = 5) {
         let { buildUrl, type, streaming } = task;
-        buildUrl = "https://dev.azure.com/ms-juniper/Juniper/_build?definitionId=429"
+        buildUrl = "https://dev.azure.com/ms-juniper/Juniper/_build?definitionId=425"
         streaming = "Yes"
         type = "Test"
         const server = getCIProviderName(buildUrl);
@@ -41,7 +41,8 @@ class AzureBuildMonitor {
          */
         const limit = Math.min(historyNum, allBuilds.length);
         const testResults = new TestResultsDB();
-        for (let i = 2; i < limit; i++) {
+        for (let i = 1; i < limit; i++) {
+            delete allBuilds[i].azure.triggerInfo;
            
             const buildNum = parseInt(allBuilds[i].buildNum, 10);
             
@@ -49,8 +50,17 @@ class AzureBuildMonitor {
             //const triggeredBuildIds = await ciServer.getTriggeredBuildIds(url, buildNum);
             //console.log(triggeredBuildIds)
 
+            
 
+            // Get all the test runs from a build 
+            const testRuns = await ciServer.query_test_runs(url, buildNum, allBuilds[i].azure.startTime, allBuilds[i].azure.finishTime);
+            console.log(testRuns)
 
+            //Store the runIds info into database
+            for (let testRun of testRuns)
+            {
+                await testResults.populateDB(testRun);
+            }
 
  
             const buildsInDB = await testResults.getData({ url, buildName, buildNum }).toArray();
@@ -87,22 +97,6 @@ class AzureBuildMonitor {
 
     getChildrenByParentId(recArray, id) {
         return recArray.filter(rec => rec.azure.parentId === id );
-
-        //return recArray.filter(rec => rec.parentId === id );
-        // const children = recArray.map( rec => {
-        //     if (!rec) {
-        //         console.log("getChildrenByParentId !rec", rec);
-        //     }
-        //     if (rec.azure ) {
-        //         console.log("getChildrenByParentId", rec.azure.parentId, id);
-        //         if (rec.azure.parentId === id) {
-        //             console.log("getChildrenByParentId rec", rec);
-        //             return rec;
-        //         }
-        //     }
-        // });
-        // console.log("getChildrenByParentId children", children);
-        // return children;
     }
 
     // return the children task from parents recursively from top to bottom

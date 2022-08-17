@@ -154,17 +154,17 @@ class AzureBuildProcessor {
             let output = '';
             let msg = 'updateBuildWithOutput';
             try {
-                output = await ciServer.getBuildOutput(task);
-                if (output) {
-                    console.log("output", output);
-                    task.output = output;
+                //output = await ciServer.getBuildOutput(task);
+                if (task.azure && task.azure.type && task.azure.type == 'Job') {
+                    //console.log("output", output);
+                    //task.output = output;
 
                     // Update the test information
                     await new AzureDataManager().updateBuildWithOutput(task);
                 } else {
-                    msg = 'Cannot get the output';
-                    logger.warn(msg, task.url, task.buildName, task.buildNum);
-                    task.error = msg;
+                    // msg = 'Cannot get the output';
+                    // logger.warn(msg, task.url, task.buildName, task.buildNum);
+                    // task.error = msg;
                     await new AzureDataManager().updateBuild(task);
                 }
                 await new AuditLogsDB().insertAuditLogs({

@@ -20,7 +20,7 @@ class AzureDataManager {
     //         }
     //     }
     // }
-    async getTestSummary(test)
+    async getTestSummary(parentId, jobName, testResults)
     {
         
         let total = 0;
@@ -29,16 +29,20 @@ class AzureDataManager {
         let failed = 0;
         let skipped = 0;
         let disabled = 0;
-        const summaryRegex =
-            /\S*\s*?TOTAL:\s*([0-9]*)\s*EXECUTED:\s*([0-9]*)\s*PASSED:\s*([0-9]*)\s*FAILED:\s*([0-9]*)\s*DISABLED:\s*([0-9]*)\s*SKIPPED:\s*([0-9]*)\s*/;
-        if ((m = summaryRegex.exec(output)) !== null) {
-            total = parseInt(m[1], 10);
-            executed = parseInt(m[2], 10);
-            passed = parseInt(m[3], 10);
-            failed = parseInt(m[4], 10);
-            disabled = parseInt(m[5], 10);
-            skipped = parseInt(m[6], 10);
+
+        let newJobName = ""
+        console.log(jobName.slice(4))
+        if(jobName.slice(0, 3) == 'dev')
+        {
+            newJobName = jobName.slice(4)
         }
+        else
+            newJobName = jobName
+        const correspondTestRun = await testResults.getJobTestRun(parentId, newJobName)
+        console.log(correspondTestRun)
+        
+
+        
         return { total, executed, passed, failed, disabled, skipped }
     }
     async parseOutput(buildName, testData) {
@@ -51,6 +55,10 @@ class AzureDataManager {
             {
                 if(test.buildResult == 'SUCCESS'){
                     testResult = 'PASSED';
+                }
+                else if(test.buildResult == "FAILURE")
+                {
+                    testResult = 'FAILED'
                 }
                 else{testResult = test.buildResult;}
             }
@@ -72,7 +80,7 @@ class AzureDataManager {
             });
         }
         let machine = null;
-        if(testData[0].azure && testData[0].azure.workerName)
+        if(testData[0] && testData[0].azure && testData[0].azure.workerName)
             machine = testData[0].azure.workerName
         //let machine = testData[0].azure.workerName ? testsData[0].azure.workerName : null;
 
@@ -173,9 +181,10 @@ class AzureDataManager {
         const { _id, buildName, output, rootBuildId, ...newData } = data;
 
         let testInput = []
+        
         //if the task is job  
         if (data.azure && data.azure.type && data.azure.type == 'Job'){
-            // Fetch tests from database with this job as parent
+            
             testInput = await testResults.getChildrenByParentId(_id)
         }
 
@@ -186,6 +195,12 @@ class AzureDataManager {
             //output
             testInput
         );
+
+        // Get the test summary of a job
+        if (data.azure && data.azure.type && data.azure.type == 'Job'){
+            
+            tests.testSummary = this.getTestSummary(data.parentId, data.buildNameStr, testResults);
+        }
         
         const outputDB = new OutputDB();
         let update = {

@@ -207,6 +207,25 @@ class Database {
             { $match: {parentId: _id}},
             
         ])
+        //console.log(result)
+        return result
+    }
+
+    async getJobTestRun(parentId, jobName)
+    {
+        //get the stage name
+        const _pid = new ObjectID(parentId);
+
+
+        const dad = await this.aggregate([{$match: {_id: _pid}}])
+        const grandpa = await this.aggregate([{$match: {_id: dad[0].parentId}}])
+
+        const grandpaName = grandpa[0].buildNameStr.replaceAll(' ', '_')
+
+        const result = await this.aggregate([
+            //{$match:{"pipelineReference.stageReference.stageName":'test_dev_alpine_x64','pipelineReference.jobReference.jobName':'jdk_tier1_regular'}}
+            {$match:{"pipelineReference.stageReference.stageName":grandpaName,'pipelineReference.jobReference.jobName':jobName}}       
+        ])
         console.log(result)
         return result
     }
@@ -355,3 +374,4 @@ module.exports = {
     UserDB,
     ObjectID,
 };
+  

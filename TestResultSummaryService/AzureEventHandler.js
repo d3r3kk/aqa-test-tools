@@ -32,7 +32,10 @@ class AzureEventHandler {
                     try {
                         const azureBuildProcessor = new AzureBuildProcessor();
                         //205 is a job
-                        await azureBuildProcessor.execute(tasks[205]);
+
+                        // Maybe just pass stage, phase and job first
+                        if (task.azure && task.azure.type && task.azure.type =='Job')
+                            await azureBuildProcessor.execute(task);
                     } catch (e) {
                         logger.error('Exception in BuildProcessor: ', e);
                         await new AuditLogsDB().insertAuditLogs({
@@ -44,7 +47,7 @@ class AzureEventHandler {
                         'EventHandler: processBuild() is waiting for 2 secs before processing the next build'
                     );
                     //await Promise.delay(2 * 1000);
-                    await Promise.delay(1000*1000);
+                    await Promise.delay(1000);
                 }
             } catch (e) {
                 logger.error('Exception in database query: ', e);

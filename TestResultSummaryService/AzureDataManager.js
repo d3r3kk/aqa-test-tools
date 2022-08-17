@@ -11,15 +11,7 @@ const { logger } = require('./Utils');
 const Utils = require('./parsers/Utils');
 
 class AzureDataManager {
-    // findParserType(buildName, output) {
-    //     const keys = Object.keys(Parsers);
-    //     for (let i = 0; i < keys.length; i++) {
-    //         const type = keys[i];
-    //         if (Parsers[type].canParse(buildName, output)) {
-    //             return type;
-    //         }
-    //     }
-    // }
+
     async getTestSummary(parentId, jobName, testResults)
     {
         
@@ -40,8 +32,21 @@ class AzureDataManager {
             newJobName = jobName
         const correspondTestRun = await testResults.getJobTestRun(parentId, newJobName)
         console.log(correspondTestRun)
-        
 
+        if(correspondTestRun)
+        {
+            total = correspondTestRun[0].totalTests;
+            passed = correspondTestRun[0].passedTests;
+            if(correspondTestRun[0].runStatistics[1])
+            {
+                failed = correspondTestRun[0].runStatistics[1].count;
+            }       
+            disabled = correspondTestRun[0].notApplicableTests;
+            skipped = correspondTestRun[0].notApplicableTests;
+            executed = passed + failed;
+            //incomplete tests unanalyzed 
+            
+        }
         
         return { total, executed, passed, failed, disabled, skipped }
     }
@@ -196,10 +201,11 @@ class AzureDataManager {
             testInput
         );
 
+        let testSummary = {}
         // Get the test summary of a job
         if (data.azure && data.azure.type && data.azure.type == 'Job'){
             
-            tests.testSummary = this.getTestSummary(data.parentId, data.buildNameStr, testResults);
+            testSummary =  await this.getTestSummary(data.parentId, data.buildNameStr, testResults);
         }
         
         const outputDB = new OutputDB();
@@ -280,6 +286,7 @@ class AzureDataManager {
             );
             update.tests = testsObj;
             update.hasChildren = false;
+            update.testSummary = testSummary;
         } else if (build === null) {
             const buildOutputId = await this.updateOutput({ id: null, output });
             update.buildOutputId = buildOutputId;

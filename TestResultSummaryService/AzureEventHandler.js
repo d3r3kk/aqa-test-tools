@@ -34,8 +34,12 @@ class AzureEventHandler {
                         //205 is a job
 
                         // Maybe just pass stage, phase and job first
-                        if (task.azure && task.azure.type && task.azure.type =='Job')
-                            await azureBuildProcessor.execute(task);
+
+                        //155 build linux
+                        //946 build macOS_aarch64
+                        //2018 dev jdk_tier1_regular
+                        //if (task.azure && task.azure.type && task.azure.type =='Job')
+                            await azureBuildProcessor.execute(tasks[2018]);
                     } catch (e) {
                         logger.error('Exception in BuildProcessor: ', e);
                         await new AuditLogsDB().insertAuditLogs({
@@ -47,7 +51,7 @@ class AzureEventHandler {
                         'EventHandler: processBuild() is waiting for 2 secs before processing the next build'
                     );
                     //await Promise.delay(2 * 1000);
-                    await Promise.delay(1000);
+                    await Promise.delay(1000* 1000);
                 }
             } catch (e) {
                 logger.error('Exception in database query: ', e);

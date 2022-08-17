@@ -55,9 +55,16 @@ export default class BuildDetail extends Component {
         const triggeredBuildIds = parent[0].triggeredBuildIds;
         console.log(triggeredBuildIds);
         const tBuilds = [];
+        const tPpls = [];
         for (let tId of triggeredBuildIds)
         {
-            tBuilds.push(await fetchData(`/api/getTriggeredBuild?buildNum=${tId} `));
+            const tBuild = await fetchData(`/api/getTriggeredBuild?buildNum=${tId} `);
+            if(!tPpls.includes(tBuild[0].buildName))
+            {
+                tBuilds.push(tBuild);
+                tPpls.push(tBuild[0].buildName);
+            }
+            
         }
         // const tBuild = await fetchData(
         //     //`/api/getChildBuilds?parentId=${tId}`

@@ -5,11 +5,13 @@ import { SearchOutput } from '../Search/';
 import { getParams, params } from '../utils/query';
 import { fetchData } from '../utils/Utils';
 import BuildTable from './BuildTable';
+import TopLevelBuildTable from './TopLevelBuildTable';
 
 export default class BuildDetail extends Component {
     state = {
         builds: [],
         parent: [],
+        tBuilds: [],
     };
 
     async componentDidMount() {
@@ -50,11 +52,24 @@ export default class BuildDetail extends Component {
 
         const parent = await fetchData(`/api/getData?_id=${parentId} `);
 
-        this.setState({ builds, parent });
+        const triggeredBuildIds = parent[0].triggeredBuildIds;
+        console.log(triggeredBuildIds);
+        const tBuilds = [];
+        for (let tId of triggeredBuildIds)
+        {
+            tBuilds.push(await fetchData(`/api/getTriggeredBuild?buildNum=${tId} `));
+        }
+        // const tBuild = await fetchData(
+        //     //`/api/getChildBuilds?parentId=${tId}`
+        //     `/api/getTriggeredBuild?type=Test&tId=${tId}`
+        // );
+        // //const tBuild = tId;
+
+        this.setState({ builds, parent,tBuilds });
     }
 
     render() {
-        const { builds, parent } = this.state;
+        const { builds, parent, tBuilds } = this.state;
         const { parentId } = getParams(this.props.location.search);
 
         const childBuildsDataSource = [];
@@ -89,6 +104,7 @@ export default class BuildDetail extends Component {
                     ? new Date(builds[i].timestamp).toLocaleString()
                     : null,
                 comments: builds[i].comments,
+                //triggeredBuildIds: builds[i].triggeredBuildIds,
             });
         }
 
@@ -106,17 +122,21 @@ export default class BuildDetail extends Component {
         ];
         const parentBuildsDataSource = [];
         let buildName = '';
+        let triggeredBuildIds = [];
         if (parent && parent[0]) {
             let i = 0;
             for (let key in parent[0].buildData) {
                 parentBuildsDataSource.push({
                     key: i++,
                     buildInfo: key,
-                    sha: parent[0].buildData[key],
+                    sha: parent[0].buildData[key],  
                 });
             }
             buildName = parent[0].buildName;
+            parentBuildsDataSource.push({triggeredBuildIds: parent[0].triggeredBuildIds})
+            //triggeredBuildIds = parent[0].triggeredBuildIds;
         }
+
 
         return (
             <div>
@@ -134,6 +154,21 @@ export default class BuildDetail extends Component {
                     title={'Children builds'}
                     buildData={childBuildsDataSource}
                 />
+
+                {/*Table for triggered builds*/}
+                {tBuilds.map((tBuild, i) => {                    
+                            
+                                    console.log(tBuild);
+                                    return (     
+                                        <TopLevelBuildTable
+                                            url={tBuild[0].url} // url of triggered build
+                                            buildName={tBuild[0].buildName} // name of the triggered name
+                                            type="Build"
+                                            key={i}
+                                        />
+                                    );
+                                })
+                }
             </div>
         );
     }

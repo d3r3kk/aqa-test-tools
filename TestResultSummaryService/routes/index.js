@@ -43,6 +43,7 @@ app.get('/getTestByVersionInfo', wrap(require('./getTestByVersionInfo')));
 app.get('/getTestPerPlatform', wrap(require('./getTestPerPlatform')));
 app.get('/getTopLevelBuildNames', wrap(require('./getTopLevelBuildNames')));
 app.get('/getTotals', wrap(require('./getTotals')));
+app.get('/getTriggeredBuild', wrap(require('./getTriggeredBuild')));
 app.get('/parseJenkinsUrl', wrap(require('./parseJenkinsUrl')));
 app.get('/populateDB', wrap(require('./populateDB')));
 app.get('/getFeedbackUrl', wrap(require('./getFeedbackUrl')));

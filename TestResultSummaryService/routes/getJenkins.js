@@ -14,14 +14,14 @@ module.exports = async (req, res) => {
         subId = req.query.subId
     }
     const server = getCIProviderName(url);
-    // if (server === "Azure") { // TODO: fix this to be more generic
-    //     const type = "Test";
-    //     const streaming = "Yes";
-    //     //let { url, type, streaming } = task;
-    //     const azureBuildMonitor = new AzureBuildMonitor();
-    //     //await azureBuildMonitor.execute( task, 5 );
-    //    await azureBuildMonitor.execute( [url, type, streaming], 2 );
-    // }
+    if (server === "Azure") { // TODO: fix this to be more generic
+        const type = "Test";
+        const streaming = "Yes";
+        //let { url, type, streaming } = task;
+        const azureBuildMonitor = new AzureBuildMonitor();
+        //await azureBuildMonitor.execute( task, 5 );
+       await azureBuildMonitor.execute( [url, type, streaming], 5 );
+    }
 
     const handler = new AzureEventHandler();
     handler.processBuild();

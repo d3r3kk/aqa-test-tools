@@ -100,6 +100,17 @@ timestamp: 1584734443756
         return this.formatData(builds, true, url);
     }
 
+
+    async getSpecificBuild(url, buildId)
+    {
+        // Get the build API of AzDo Rest API
+        const { orgUrl, projectName } = this.getProjectInfo(url);
+        const buildApi = await this.getBuildApi(orgUrl, projectName);
+
+        const specificBuild = await buildApi.getBuild(projectName, buildId)
+        return this.formatData([specificBuild], true, url);
+    }
+
     async extractTriggeredBuildIds(output) {
         let m;
         let tIds = [];
@@ -157,6 +168,8 @@ timestamp: 1584734443756
 
     }
 
+    
+
 
     streamToString(stream) {
         const chunks = []
@@ -174,7 +187,7 @@ timestamp: 1584734443756
         if (azure && azure.log && azure.log.id) {
             const { orgUrl, projectName } = this.getProjectInfo(url);
             const buildApi = await this.getBuildApi(orgUrl, projectName);
-            console.log("getBuildOutput ", projectName, buildNum, azure);
+            //console.log("getBuildOutput ", projectName, buildNum, azure);
             const output = await buildApi.getBuildLog(projectName, buildNum, azure.log.id);
             return await this.streamToString(output);
         }

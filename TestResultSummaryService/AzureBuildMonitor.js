@@ -7,7 +7,7 @@ const Azure = require(`./ciServers/Azure`);
 class AzureBuildMonitor {
     async execute(task, historyNum = 5) {
         let { buildUrl, type, streaming } = task;
-        buildUrl = "https://dev.azure.com/ms-juniper/Juniper/_build?definitionId=425"
+        buildUrl = "https://dev.azure.com/ms-juniper/Juniper/_build?definitionId=429"
         streaming = "Yes"
         type = "Test"
         const server = getCIProviderName(buildUrl);
@@ -41,58 +41,121 @@ class AzureBuildMonitor {
          */
         const limit = Math.min(historyNum, allBuilds.length);
         const testResults = new TestResultsDB();
-        for (let i = 1; i < limit; i++) {
+        for (let i = 4; i < limit; i++) {
             delete allBuilds[i].azure.triggerInfo;
            
             const buildNum = parseInt(allBuilds[i].buildNum, 10);
             
-            // Get the triggered build from a build pipelines by parsing the log
-            //const triggeredBuildIds = await ciServer.getTriggeredBuildIds(url, buildNum);
-            //console.log(triggeredBuildIds)
+            // // Get the triggered build from a build pipelines by parsing the log
+            
+
+            await this.getBaseInfoFromBuildIds(allBuilds[i], buildNum, ciServer, url, testResults, buildName)
 
             
 
-            // Get all the test runs from a build 
-            const testRuns = await ciServer.query_test_runs(url, buildNum, allBuilds[i].azure.startTime, allBuilds[i].azure.finishTime);
-            console.log(testRuns)
 
-            //Store the runIds info into database
-            for (let testRun of testRuns)
-            {
-                await testResults.populateDB(testRun);
-            }
+
+
+//          
+
+            // // Get all the test runs from a build 
+            // const testRuns = await ciServer.query_test_runs(url, buildNum, allBuilds[i].azure.startTime, allBuilds[i].azure.finishTime);
+            // //console.log(testRuns)
+
+            // //Store the runIds info into database
+            // for (let testRun of testRuns)
+            // {
+            //     await testResults.populateDB(testRun);
+            // }
 
  
-            const buildsInDB = await testResults.getData({ url, buildName, buildNum }).toArray();
-            if (!buildsInDB || buildsInDB.length === 0) {
-                let status = "NotDone";
-                //let status = "Done";
-                if (streaming === "Yes" && allBuilds[i].result === null) {
-                    status = "Streaming";
-                    logger.info(`Set build ${url} ${buildName} ${buildNum} status to Streaming `);
-                }
+            // const buildsInDB = await testResults.getData({ url, buildName, buildNum }).toArray();
+            // if (!buildsInDB || buildsInDB.length === 0) {
+            //     let status = "NotDone";
+            //     //let status = "Done";
+            //     if (streaming === "Yes" && allBuilds[i].result === null) {
+            //         status = "Streaming";
+            //         logger.info(`Set build ${url} ${buildName} ${buildNum} status to Streaming `);
+            //     }
 
-                //const buildType = type === "FVT" ? "Test" : type;
+            //     //const buildType = type === "FVT" ? "Test" : type;
 
-                const parentId = await this.insertData({
-                    url,
-                    ...allBuilds[i],
-                    //type: buildType,
-                    status
-                });
-                // insert all records in Azure timeline
-                //(39605, https:../Juniper)
-                const timelineRecs = await ciServer.getTimelineRecords(url, buildNum);
+            //     const parentId = await this.insertData({
+            //         url,
+            //         ...allBuilds[i],
+            //         //type: buildType,
+            //         status,
+            //         triggeredBuildIds,
+            //     });
+            //     // insert all records in Azure timeline
+            //     //(39605, https:../Juniper)
+            //     const timelineRecs = await ciServer.getTimelineRecords(url, buildNum);
 
-                //const extraData = {status, url, buildName, buildNum, type: buildType};
-                const extraData = {status, url, buildName, buildNum};
+            //     //const extraData = {status, url, buildName, buildNum, type: buildType};
+            //     const extraData = {status, url, buildName, buildNum};
                 
-                await this.insertBuilds(timelineRecs, null, parentId, extraData);
-                //await this.insertBuilds(timelineRecs, subId, parentId, extraData);
-            } else {
-                break;
-            }
+            //     await this.insertBuilds(timelineRecs, null, parentId, extraData);
+            //     //await this.insertBuilds(timelineRecs, subId, parentId, extraData);
+            // } else {
+            //     break;
+            // }
         }
+    }
+
+
+    async getBaseInfoFromBuildIds(singleBuild, buildNum, ciServer, url, testResults, buildName){
+        // Get all the test runs from a build 
+        const testRuns = await ciServer.query_test_runs(url, buildNum, singleBuild.azure.startTime, singleBuild.azure.finishTime);
+
+        const triggeredBuildIds = await ciServer.getTriggeredBuildIds(url, buildNum);
+        //console.log(triggeredBuildIds)
+
+        for(let tId of triggeredBuildIds){
+            const triggerItem = await ciServer.getSpecificBuild(url, tId);
+            await this.getBaseInfoFromBuildIds(triggerItem[0], tId, ciServer, url, testResults, triggerItem[0].azure.definition.id);
+        }
+
+        // const trigger0 = await ciServer.getSpecificBuild(url, triggeredBuildIds[0].definition.id);
+        // console.log(trigger0)
+
+        //Store the runIds info into database
+        for (let testRun of testRuns)
+        {
+            await testResults.populateDB(testRun);
+        }
+
+
+        const buildsInDB = await testResults.getData({ url, buildName, buildNum }).toArray();
+        if (!buildsInDB || buildsInDB.length === 0) {
+            let status = "NotDone";
+            //let status = "Done";
+            // if (streaming === "Yes" && singleBuild.result === null) {
+            //     status = "Streaming";
+            //     logger.info(`Set build ${url} ${buildName} ${buildNum} status to Streaming `);
+            // }
+
+            //const buildType = type === "FVT" ? "Test" : type;
+
+            const parentId = await this.insertData({
+                url,
+                ...singleBuild,
+                //type: buildType,
+                status,
+                triggeredBuildIds,
+            });
+            // insert all records in Azure timeline
+            //(39605, https:../Juniper)
+            const timelineRecs = await ciServer.getTimelineRecords(url, buildNum);
+
+            //const extraData = {status, url, buildName, buildNum, type: buildType};
+            const extraData = {status, url, buildName, buildNum};
+            
+            await this.insertBuilds(timelineRecs, null, parentId, extraData);
+            //await this.insertBuilds(timelineRecs, subId, parentId, extraData);
+        } else {
+            return;
+        }
+
     }
 
     getChildrenByParentId(recArray, id) {

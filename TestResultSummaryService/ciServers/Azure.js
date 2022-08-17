@@ -10,6 +10,7 @@ const fs = require('fs');
 const { url } = require('inspector');
 const e = require('express');
 const { Z_BUF_ERROR } = require('zlib');
+const { TestApi } = require('azure-devops-node-api/TestApi');
 
 const options = { request: { timeout: 2000 } };
 
@@ -37,7 +38,7 @@ const retry = fn => {
 const buildResult = {
     //0: null,  // None
     0: "SUCCESS",
-    2: "SUCCESS",
+    2: "FAILURE",
     //4: "FAILURE",  // PartiallySucceeded
     4: "SKIPPED",  // PartiallySucceeded
     8: "FAILURE",
@@ -124,7 +125,9 @@ timestamp: 1584734443756
         if(logs.records){
             for (let azure of logs.records)
             {
+                //console.log(azure.result);
                 if ((azure.type && azure.type == "Task") && 
+                (azure.result !== null && azure.result !== 4) && 
                 (azure.name && azure.name == "TriggerBuild" || 
                 azure.name && azure.name.includes("trigger"))) {
                     let output = await this.getBuildOutput({url, buildNum, azure});
@@ -139,6 +142,20 @@ timestamp: 1584734443756
         return results
     }
 
+    async query_test_runs(url, buildNum, startTime, finishTime){
+        // Get the build API of AzDo Rest API
+        const { orgUrl, projectName } = this.getProjectInfo(url);
+        const buildApi = await this.getBuildApi(orgUrl, projectName);
+        const testApi = await this.getTestApi(orgUrl, projectName);
+
+        // Get all runIds 
+        const runIds = await testApi.queryTestRuns(projectName, startTime, finishTime, null, null, null, null, [buildNum]);
+        //console.log(runIds)
+
+        return runIds
+
+
+    }
 
 
     streamToString(stream) {
@@ -239,7 +256,7 @@ timestamp: 1584734443756
             }
 
             let result = null
-            console.log(d.result)
+            //console.log(d.result)
             if(d.result != null)
             {
                 result = buildResult[d.result]
@@ -316,8 +333,6 @@ timestamp: 1584734443756
         //     token = encodeURIComponent(this.credentails[url].password);
         // }
         
-        
-        
 
         return token;
     }
@@ -341,6 +356,16 @@ timestamp: 1584734443756
 
         return await connection.getBuildApi();
     }
+
+    async getTestApi(url)
+    {
+        const token = this.getToken(url);
+        const authHandler = azdev.getPersonalAccessTokenHandler(token);
+        const connection = new azdev.WebApi(url, authHandler);
+
+        return await connection.getTestApi();
+    }
+    
 
 }
 

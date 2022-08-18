@@ -29,9 +29,9 @@ export default class TopLevelBuildTable extends Component {
             await this.updateData();
         }
 
-        if (prevState.currentPage !== this.state.currentPage) {
-            await this.updateTotals();
-        }
+        // if (prevState.currentPage !== this.state.currentPage) {
+        //     await this.updateTotals();
+        // }
     }
 
     async updateData() {
@@ -50,10 +50,11 @@ export default class TopLevelBuildTable extends Component {
             startBy: build.azure.requestedFor.displayName ? build.azure.requestedFor.displayName : 'N/A',
             jenkins: build,
             keepForever: build.keepForever ? build.keepForever : false,
+            totals: build.totalTestSummary ? build.totalTestSummary: {},
         }));
         this.setState({ buildInfo });
 
-        await this.updateTotals();
+        //await this.updateTotals();
     }
 
     async updateTotals() {
@@ -277,6 +278,8 @@ export default class TopLevelBuildTable extends Component {
             
             const renderTotals = (value, row, index) => {
                 if (!value) return <div>N/A</div>;
+                //console.log(buildInfo)
+                console.log(value);
                 const {
                     failed = 0,
                     passed = 0,
@@ -347,6 +350,7 @@ export default class TopLevelBuildTable extends Component {
             };
 
             const renderBuildResults = (value) => {
+                console.log(value);
                 return (
                     <div>
                         <BuildLink

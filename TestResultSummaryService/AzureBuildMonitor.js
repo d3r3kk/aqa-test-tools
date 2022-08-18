@@ -3,6 +3,7 @@ const { TestResultsDB, AuditLogsDB } = require('./Database');
 const { logger } = require('./Utils');
 const { getCIProviderName, getCIProviderObj } = require(`./ciServers`);
 const Azure = require(`./ciServers/Azure`);
+const { TestResultsSettingsType } = require('azure-devops-node-api/interfaces/TestInterfaces');
 
 class AzureBuildMonitor {
     async execute(task, historyNum = 5) {
@@ -46,7 +47,8 @@ class AzureBuildMonitor {
            
             const buildNum = parseInt(allBuilds[i].buildNum, 10);
             
-            // // Get the triggered build from a build pipelines by parsing the log
+            // get the total test info
+            //const totalTestInfo = await ciServer.getRunStatistics()
             
 
             await this.getBaseInfoFromBuildIds(allBuilds[i], buildNum, ciServer, url, testResults, buildName)
@@ -69,11 +71,27 @@ class AzureBuildMonitor {
         // const trigger0 = await ciServer.getSpecificBuild(url, triggeredBuildIds[0].definition.id);
         // console.log(trigger0)
 
+        // get the total tests number from a top level build
+        let total = 0;
+        let executed = 0;
+        let passed = 0;
+        let failed = 0;
+        let skipped = 0;
+        let disabled = 0;
         //Store the runIds info into database
         for (let testRun of testRuns)
         {
             await testResults.populateDB(testRun);
+            total += testRun.totalTests;
+            passed += testRun.passedTests;
+            failed += testRun.unanalyzedTests;
+            disabled += testRun.notApplicableTests;
+            skipped += testRun.notApplicableTests;
+            executed += passed + failed;
+            
         }
+
+        let totalTestSummary = {total, passed, failed, disabled, skipped, executed};
 
 
         const buildsInDB = await testResults.getData({ url, buildName, buildNum }).toArray();
@@ -93,6 +111,7 @@ class AzureBuildMonitor {
                 //type: buildType,
                 status,
                 triggeredBuildIds,
+                totalTestSummary
             });
             // insert all records in Azure timeline
             //(39605, https:../Juniper)

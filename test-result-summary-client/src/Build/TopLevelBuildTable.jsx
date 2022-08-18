@@ -274,6 +274,7 @@ export default class TopLevelBuildTable extends Component {
                 );
             };
 
+            
             const renderTotals = (value, row, index) => {
                 if (!value) return <div>N/A</div>;
                 const {
@@ -303,6 +304,7 @@ export default class TopLevelBuildTable extends Component {
                         >
                             Grid
                         </Link>
+                        {/*Render the test detail links */}
                         <div>
                             <BuildLink
                                 id={id}

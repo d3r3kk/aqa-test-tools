@@ -9,6 +9,7 @@ const ObjectID = require('mongodb').ObjectID;
 //const DefaultParser = require(`./parsers/Default`);
 const { logger } = require('./Utils');
 const Utils = require('./parsers/Utils');
+const { getCIProviderName, getCIProviderObj } = require(`./ciServers`);
 
 class AzureDataManager {
 
@@ -49,6 +50,30 @@ class AzureDataManager {
         }
         
         return { total, executed, passed, failed, disabled, skipped }
+    }
+
+    async getTestsFromRun(parentId, jobName, testResults)
+    {
+        let newJobName = ""
+        console.log(jobName.slice(4))
+        if(jobName.slice(0, 3) == 'dev')
+        {
+            newJobName = jobName.slice(4)
+        }
+        else
+            newJobName = jobName
+        const correspondTestRun = await testResults.getJobTestRun(parentId, newJobName)
+        let testInput = []
+
+        buildUrl = "https://dev.azure.com/ms-juniper/Juniper/_build?definitionId=425";
+        const server = getCIProviderName(buildUrl);
+        const ciServer = getCIProviderObj(server);
+
+        if(correspondTestRun[0])
+        { 
+            testInput = await ciServer.getTestFromRunId();
+        }
+        return testInput;
     }
     async parseOutput(buildName, testData) {
         const tests = [];
@@ -124,6 +149,8 @@ class AzureDataManager {
         }
         return -1;
     }
+
+    
 
     async updateApplicationTests(data) {
         const { testName, testData, buildName, timestamp, _id, ...newData } =

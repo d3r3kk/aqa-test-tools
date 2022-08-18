@@ -100,6 +100,15 @@ timestamp: 1584734443756
         return this.formatData(builds, true, url);
     }
 
+    // async getTestsFromRunIds(){
+    //     // Get the build API of AzDo Rest API
+    //     const { orgUrl, projectName } = this.getProjectInfo(url);
+    //     const testApi = await this.getTestApi(orgUrl, projectName);
+
+
+
+    // }
+
 
     async getSpecificBuild(url, buildId)
     {
@@ -345,7 +354,7 @@ timestamp: 1584734443756
         // if (this.credentails && this.credentails.hasOwnProperty(url)) {
         //     token = encodeURIComponent(this.credentails[url].password);
         // }
-       
+        
 
         return token;
     }

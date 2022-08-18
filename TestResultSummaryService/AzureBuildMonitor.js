@@ -119,9 +119,16 @@ class AzureBuildMonitor {
         if (!recArray || recArray.length === 0) return;
         const children = this.getChildrenByParentId(recArray, azureParentId);
         for (let child of children) {
-            // if((child.azure && child.azure.type == 'Stage' && child.buildName.includes("test dev"))
-            //  || (child.azure && child.azure.type == 'Phase')
-            //  || (child.azure && child.azure.type == 'Job' && child.buildNameStr != 'Finalize build')){
+            if((child.azure && child.azure.type == 'Stage' && child.buildName.includes("test dev"))
+             || (child.azure && child.azure.type == 'Stage' && child.buildName.includes("tck"))
+             || (child.azure && child.azure.type == 'Stage' && child.buildName.includes("gTest"))
+             || (child.azure && child.azure.type == 'Phase')
+             || (child.azure && child.azure.type == 'Job' && child.buildNameStr != 'Finalize build')
+             || (child.azure && child.azure.type == 'Task' && child.buildNameStr.includes('jtreg'))
+             || (child.azure && child.azure.type == 'Task' && child.buildNameStr.includes('PythonScript'))
+             || (child.azure && child.azure.type == 'Task' && child.buildNameStr.includes('run'))
+             || (child.azure && child.azure.type == 'Task' && child.buildNameStr.includes('publish'))
+             ){
                 const newTrssParentId = await this.insertData({
                     parentId : trssParentId,
                     ...child,
@@ -129,7 +136,7 @@ class AzureBuildMonitor {
                 });
 
                 await this.insertBuilds(recArray, child.subId, newTrssParentId, extraData);
-            //}
+            }
             //await this.insertBuilds(recArray, child.id, newTrssParentId, extraData);
         }
     }

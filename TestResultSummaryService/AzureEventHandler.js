@@ -51,7 +51,7 @@ class AzureEventHandler {
                         'EventHandler: processBuild() is waiting for 2 secs before processing the next build'
                     );
                     //await Promise.delay(2 * 1000);
-                    await Promise.delay(100);
+                    await Promise.delay(50);
                 }
             } catch (e) {
                 logger.error('Exception in database query: ', e);

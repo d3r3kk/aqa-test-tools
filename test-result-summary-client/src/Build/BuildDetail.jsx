@@ -52,11 +52,13 @@ export default class BuildDetail extends Component {
 
         const parent = await fetchData(`/api/getData?_id=${parentId} `);
 
-        const triggeredBuildIds = parent[0].triggeredBuildIds;
-        console.log(triggeredBuildIds);
         const tBuilds = [];
         const tPpls = [];
-        for (let tId of triggeredBuildIds)
+        
+        if(parent[0].triggeredBuildIds)
+        {
+            const triggeredBuildIds = parent[0].triggeredBuildIds;
+            for (let tId of triggeredBuildIds)
         {
             const tBuild = await fetchData(`/api/getTriggeredBuild?buildNum=${tId} `);
             if(!tPpls.includes(tBuild[0].buildName))
@@ -66,6 +68,11 @@ export default class BuildDetail extends Component {
             }
             
         }
+        }
+        
+        //console.log(triggeredBuildIds);
+        
+        
         // const tBuild = await fetchData(
         //     //`/api/getChildBuilds?parentId=${tId}`
         //     `/api/getTriggeredBuild?type=Test&tId=${tId}`
@@ -162,7 +169,7 @@ export default class BuildDetail extends Component {
                     buildData={childBuildsDataSource}
                 />
 
-                {/*Table for triggered builds*/}
+                {/* Table for triggered builds */}
                 {tBuilds.map((tBuild, i) => {                    
                             
                                     console.log(tBuild);

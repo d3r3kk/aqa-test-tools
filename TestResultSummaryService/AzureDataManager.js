@@ -33,7 +33,7 @@ class AzureDataManager {
         const correspondTestRun = await testResults.getJobTestRun(parentId, newJobName)
         console.log(correspondTestRun)
 
-        if(correspondTestRun)
+        if(correspondTestRun[0])
         {
             total = correspondTestRun[0].totalTests;
             passed = correspondTestRun[0].passedTests;

@@ -7,7 +7,7 @@ const Azure = require(`./ciServers/Azure`);
 class AzureBuildMonitor {
     async execute(task, historyNum = 5) {
         let { buildUrl, type, streaming } = task;
-        buildUrl = "https://dev.azure.com/ms-juniper/Juniper/_build?definitionId=429"
+        buildUrl = "https://dev.azure.com/ms-juniper/Juniper/_build?definitionId=425"
         streaming = "Yes"
         type = "Test"
         const server = getCIProviderName(buildUrl);
@@ -41,7 +41,7 @@ class AzureBuildMonitor {
          */
         const limit = Math.min(historyNum, allBuilds.length);
         const testResults = new TestResultsDB();
-        for (let i = 4; i < limit; i++) {
+        for (let i = 1; i < limit; i++) {
             delete allBuilds[i].azure.triggerInfo;
            
             const buildNum = parseInt(allBuilds[i].buildNum, 10);
@@ -50,55 +50,6 @@ class AzureBuildMonitor {
             
 
             await this.getBaseInfoFromBuildIds(allBuilds[i], buildNum, ciServer, url, testResults, buildName)
-
-            
-
-
-
-
-//          
-
-            // // Get all the test runs from a build 
-            // const testRuns = await ciServer.query_test_runs(url, buildNum, allBuilds[i].azure.startTime, allBuilds[i].azure.finishTime);
-            // //console.log(testRuns)
-
-            // //Store the runIds info into database
-            // for (let testRun of testRuns)
-            // {
-            //     await testResults.populateDB(testRun);
-            // }
-
- 
-            // const buildsInDB = await testResults.getData({ url, buildName, buildNum }).toArray();
-            // if (!buildsInDB || buildsInDB.length === 0) {
-            //     let status = "NotDone";
-            //     //let status = "Done";
-            //     if (streaming === "Yes" && allBuilds[i].result === null) {
-            //         status = "Streaming";
-            //         logger.info(`Set build ${url} ${buildName} ${buildNum} status to Streaming `);
-            //     }
-
-            //     //const buildType = type === "FVT" ? "Test" : type;
-
-            //     const parentId = await this.insertData({
-            //         url,
-            //         ...allBuilds[i],
-            //         //type: buildType,
-            //         status,
-            //         triggeredBuildIds,
-            //     });
-            //     // insert all records in Azure timeline
-            //     //(39605, https:../Juniper)
-            //     const timelineRecs = await ciServer.getTimelineRecords(url, buildNum);
-
-            //     //const extraData = {status, url, buildName, buildNum, type: buildType};
-            //     const extraData = {status, url, buildName, buildNum};
-                
-            //     await this.insertBuilds(timelineRecs, null, parentId, extraData);
-            //     //await this.insertBuilds(timelineRecs, subId, parentId, extraData);
-            // } else {
-            //     break;
-            // }
         }
     }
 
@@ -168,15 +119,17 @@ class AzureBuildMonitor {
         if (!recArray || recArray.length === 0) return;
         const children = this.getChildrenByParentId(recArray, azureParentId);
         for (let child of children) {
-            const newTrssParentId = await this.insertData({
-                parentId : trssParentId,
-                ...child,
-                ...extraData,
-            });
-            //if (!child.subId) console.log("************error insertBuilds", child);
-            if (!child.id) console.log("************error insertBuilds", child);
+            // if((child.azure && child.azure.type == 'Stage' && child.buildName.includes("test dev"))
+            //  || (child.azure && child.azure.type == 'Phase')
+            //  || (child.azure && child.azure.type == 'Job' && child.buildNameStr != 'Finalize build')){
+                const newTrssParentId = await this.insertData({
+                    parentId : trssParentId,
+                    ...child,
+                    ...extraData,
+                });
 
-            await this.insertBuilds(recArray, child.subId, newTrssParentId, extraData);
+                await this.insertBuilds(recArray, child.subId, newTrssParentId, extraData);
+            //}
             //await this.insertBuilds(recArray, child.id, newTrssParentId, extraData);
         }
     }

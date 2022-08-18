@@ -23,7 +23,7 @@ export default class BuildLink extends Component {
                                 parentId: id,
                                 buildResult,
                                 testSummaryResult,
-                                buildNameRegex,
+                                //buildNameRegex,
                             }),
                         }}
                     >

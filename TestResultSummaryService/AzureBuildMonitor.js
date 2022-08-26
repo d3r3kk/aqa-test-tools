@@ -8,7 +8,7 @@ const { TestResultsSettingsType } = require('azure-devops-node-api/interfaces/Te
 class AzureBuildMonitor {
     async execute(task, historyNum = 5) {
         let { buildUrl, type, streaming } = task;
-        buildUrl = "https://dev.azure.com/ms-juniper/Juniper/_build?definitionId=425"
+        buildUrl = "https://dev.azure.com/ms-juniper/Juniper/_build?definitionId=500"
         streaming = "Yes"
         type = "Test"
         const server = getCIProviderName(buildUrl);
@@ -138,7 +138,7 @@ class AzureBuildMonitor {
         if (!recArray || recArray.length === 0) return;
         const children = this.getChildrenByParentId(recArray, azureParentId);
         for (let child of children) {
-            if((child.azure && child.azure.type == 'Stage' && child.buildName.includes("test dev"))
+            if((child.azure && child.azure.type == 'Stage' && child.buildName.includes("test"))
              || (child.azure && child.azure.type == 'Stage' && child.buildName.includes("tck"))
              || (child.azure && child.azure.type == 'Stage' && child.buildName.includes("gTest"))
              || (child.azure && child.azure.type == 'Phase')

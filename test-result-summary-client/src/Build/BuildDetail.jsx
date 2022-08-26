@@ -61,10 +61,10 @@ export default class BuildDetail extends Component {
             for (let tId of triggeredBuildIds)
         {
             const tBuild = await fetchData(`/api/getTriggeredBuild?buildNum=${tId} `);
-            if(!tPpls.includes(tBuild[0].buildName))
+            if(!tPpls.includes(tBuild.buildName))
             {
                 tBuilds.push(tBuild);
-                tPpls.push(tBuild[0].buildName);
+                tPpls.push(tBuild.buildName);
             }
             
         }
@@ -175,8 +175,8 @@ export default class BuildDetail extends Component {
                                     console.log(tBuild);
                                     return (     
                                         <TopLevelBuildTable
-                                            url={tBuild[0].url} // url of triggered build
-                                            buildName={tBuild[0].buildName} // name of the triggered name
+                                            url={tBuild.url} // url of triggered build
+                                            buildName={tBuild.buildName} // name of the triggered name
                                             type="Build"
                                             key={i}
                                         />

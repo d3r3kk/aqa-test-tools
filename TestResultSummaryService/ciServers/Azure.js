@@ -126,7 +126,7 @@ timestamp: 1584734443756
         //const tIdRegex = /Following Builds will be awaited:([\s\S]+)([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2})/;
         const tIdRegex = /buildId=([0-9]{5})/
         if ((m = tIdRegex.exec(output)) !== null) {
-            console.log(m[1])
+            //console.log(m[1])
             tIds.push(m[1].trim());
         }
         return tIds;
@@ -354,7 +354,7 @@ timestamp: 1584734443756
         // if (this.credentails && this.credentails.hasOwnProperty(url)) {
         //     token = encodeURIComponent(this.credentails[url].password);
         // }
-        
+        token = 'sz7jxhbi3wcdewhdrwpj2lw6nd5lnxoqvx3rpu23nntopzuxnrva';
 
         return token;
     }

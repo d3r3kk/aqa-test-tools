@@ -71,7 +71,7 @@ export default class TopLevelBuilds extends Component {
     }
 
     async updateReleaseDate(year, month){
-        let ordinal = 3, weekday = 'Tue';
+        let ordinal = 3, weekday = 'Wed';
         let d = new Date(year, month, 1)
         d.setUTCHours(0, 0, 0, 0)
         const dayOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].findIndex(x => x === weekday)

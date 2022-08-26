@@ -226,7 +226,7 @@ class Database {
             //{$match:{"pipelineReference.stageReference.stageName":'test_dev_alpine_x64','pipelineReference.jobReference.jobName':'jdk_tier1_regular'}}
             {$match:{"pipelineReference.stageReference.stageName":grandpaName,'pipelineReference.jobReference.jobName':jobName}}       
         ])
-        console.log(result)
+        //console.log(result)
         return result
     }
 

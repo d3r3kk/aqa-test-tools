@@ -24,21 +24,24 @@ class AzureDataManager {
         let disabled = 0;
 
         let newJobName = ""
+        let type = '';
         //console.log(jobName.slice(4))
         if(jobName.slice(0, 3) == 'dev')
         {
             newJobName = jobName.slice(4)
+            type = 'jtreg'
         }
         else if (jobName.slice(0, 7) == 'runtime' || jobName.slice(0, 8) == 'compiler')
         {
             //newJobName = jobName.slice(19);
-            //newJobName = newJobName.replace("/", "_");
+            newJobName = jobName.replaceAll('/', '_');
+            type = 'tck';
 
         }
         else
             newJobName = jobName
         console.log(newJobName);
-        const correspondTestRun = await testResults.getJobTestRun(parentId, newJobName)
+        const correspondTestRun = await testResults.getJobTestRun(parentId, newJobName, type)
         //console.log(correspondTestRun)
 
         if(correspondTestRun[0])

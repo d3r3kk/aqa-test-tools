@@ -211,7 +211,7 @@ class Database {
         return result
     }
 
-    async getJobTestRun(parentId, jobName)
+    async getJobTestRun(parentId, jobName, type)
     {
         //get the stage name
         const _pid = new ObjectID(parentId);
@@ -222,10 +222,46 @@ class Database {
 
         const grandpaName = grandpa[0].buildNameStr.replaceAll(' ', '_')
 
-        const result = await this.aggregate([
-            //{$match:{"pipelineReference.stageReference.stageName":'test_dev_alpine_x64','pipelineReference.jobReference.jobName':'jdk_tier1_regular'}}
-            {$match:{"pipelineReference.stageReference.stageName":grandpaName,'pipelineReference.jobReference.jobName':jobName}}       
-        ])
+        let result = []
+        if (type == 'tck')
+        {
+            const name = grandpaName + '_' + jobName;
+            result = await this.aggregate([
+                //{$match:{"pipelineReference.stageReference.stageName":'test_dev_alpine_x64','pipelineReference.jobReference.jobName':'jdk_tier1_regular'}}
+                {$match:{"pipelineReference.stageReference.stageName":grandpaName,'name':name}}       
+            ])
+
+        }
+        else if(type == 'jtreg')
+        {
+            result = await this.aggregate([
+                //{$match:{"pipelineReference.stageReference.stageName":'test_dev_alpine_x64','pipelineReference.jobReference.jobName':'jdk_tier1_regular'}}
+                {$match:{"pipelineReference.stageReference.stageName":grandpaName,'pipelineReference.jobReference.jobName':jobName}}       
+            ])
+            if (result == [])
+            {
+                const platform = grandpaName.slice(9);
+                const index  = jobName.indexOf('regular');
+                const front = jobName.slice(0, index - 1);
+                
+                const back = index > 0 ? jobName.slice(index) : '';
+                
+                const name = platform + '_' + back + '_' +  front;
+                result = await this.aggregate([
+                    //{$match:{"pipelineReference.stageReference.stageName":'test_dev_alpine_x64','pipelineReference.jobReference.jobName':'jdk_tier1_regular'}}
+                    {$match:{"pipelineReference.stageReference.stageName":grandpaName,'name':name}}       
+                ])
+            }
+        }
+        else {
+            result = await this.aggregate([
+                //{$match:{"pipelineReference.stageReference.stageName":'test_dev_alpine_x64','pipelineReference.jobReference.jobName':'jdk_tier1_regular'}}
+                {$match:{"pipelineReference.stageReference.stageName":grandpaName,'pipelineReference.jobReference.jobName':jobName}}       
+            ])
+        }
+
+
+        
         //console.log(result)
         return result
     }

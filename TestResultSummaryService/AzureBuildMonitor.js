@@ -8,7 +8,7 @@ const { TestResultsSettingsType } = require('azure-devops-node-api/interfaces/Te
 class AzureBuildMonitor {
     async execute(task, historyNum = 5) {
         let { buildUrl, type, streaming } = task;
-        buildUrl = "https://dev.azure.com/ms-juniper/Juniper/_build?definitionId=500"
+        buildUrl = "https://dev.azure.com/ms-juniper/Juniper/_build?definitionId=501"
         streaming = "Yes"
         type = "Test"
         const server = getCIProviderName(buildUrl);
@@ -42,7 +42,7 @@ class AzureBuildMonitor {
          */
         const limit = Math.min(historyNum, allBuilds.length);
         const testResults = new TestResultsDB();
-        for (let i = 1; i < limit; i++) {
+        for (let i = 0; i < limit; i++) {
             delete allBuilds[i].azure.triggerInfo;
            
             const buildNum = parseInt(allBuilds[i].buildNum, 10);

@@ -1,0 +1,40 @@
+{
+    // Sample launch.json you can use to debug locally.
+    //
+    // Note: If you run the docker compose command that builds & starts containerized
+    // versions of the FE, BE, and DB, and then _stop_ the FE and BE, you can use the
+    // below debugger launchers for development (leave the DB container running).
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "TRSS Backend",
+            "program": "backend.js",
+            "localRoot": "${workspaceRoot}/TestResultSummaryService",
+            "args":[
+                "--configFile=${workspaceRoot}/.vscode/my-trss-config.json"
+            ],
+            "autoAttachChildProcesses": true
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "TRSS REST API",
+            "program": "frontend.js",
+            "localRoot": "${workspaceRoot}/TestResultSummaryService",
+            "args":[
+                "--configFile=${workspaceRoot}/.vscode/my-trss-config.json"
+            ],
+            "autoAttachChildProcesses": true
+        },
+        {
+            "type": "msedge",
+            "request": "launch",
+            "name": "Launch Edge against localhost",
+            "url": "http://localhost:3000",
+            "webRoot": "${workspaceFolder}"
+          }
+        
+    ]
+}

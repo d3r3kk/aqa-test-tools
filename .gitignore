@@ -12,3 +12,5 @@ deployenv/
 *.iml
 .idea
 
+# Visual Studio Code metadata
+.vscode/

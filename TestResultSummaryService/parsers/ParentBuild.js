@@ -9,10 +9,10 @@ class ParentBuild extends Parser {
     static canParse(buildName, output) {
         if (output) {
             return output.includes('Starting building:');
-        } else {
-            return false;
         }
+        return false;
     }
+    
     parse(output) {
         let openJ9Sha = null;
         let openJdkSha = null;

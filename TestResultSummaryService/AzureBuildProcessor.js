@@ -5,9 +5,9 @@ const ObjectID = require('mongodb').ObjectID;
 const { TestResultsDB, OutputDB, AuditLogsDB } = require('./Database');
 const { logger } = require('./Utils');
 const plugins = require('./plugins');
-const { getCIProviderName, getCIProviderObj } = require(`./ciServers/`);
+const { getCIProviderName, getCIProviderObj } = require(`./ciServers`);
 
-class BuildProcessor {
+class AzureBuildProcessor {
     async execute(task) {
         const { url, buildName, buildNum } = task;
         if (!task.server) {
@@ -146,23 +146,25 @@ class BuildProcessor {
         // else if no timestamp or buildUrl, update the record in db.
         // Otherwise, do nothing.
         if (buildInfo && !buildInfo.building && buildInfo.result !== null) {
-            task.timestamp = buildInfo.timestamp;
-            task.buildUrl = buildInfo.url;
-            task.buildDuration = buildInfo.duration;
-            task.buildResult = buildInfo.result;
-            task.status = 'CurrentBuildDone';
+            task.timestamp = buildInfo[0].timestamp;
+            task.buildUrl = buildInfo[0].buildUrl;
+            task.buildDuration = buildInfo[0].duration;
+            task.buildResult = buildInfo[0].buildResult;
+            //task.status = 'CurrentBuildDone';
             let output = '';
             let msg = 'updateBuildWithOutput';
             try {
-                output = await ciServer.getBuildOutput(task);
-                if (output) {
-                    console.log("output", output);
-                    task.output = output;
+                //output = await ciServer.getBuildOutput(task);
+                if (task.azure && task.azure.type && task.azure.type == 'Job') {
+                    //console.log("output", output);
+                    //task.output = output;
+
+                    // Update the test information
                     await new AzureDataManager().updateBuildWithOutput(task);
                 } else {
-                    msg = 'Cannot get the output';
-                    logger.warn(msg, task.url, task.buildName, task.buildNum);
-                    task.error = msg;
+                    // msg = 'Cannot get the output';
+                    // logger.warn(msg, task.url, task.buildName, task.buildNum);
+                    // task.error = msg;
                     await new AzureDataManager().updateBuild(task);
                 }
                 await new AuditLogsDB().insertAuditLogs({
@@ -186,4 +188,4 @@ class BuildProcessor {
         }
     }
 }
-module.exports = BuildProcessor;
+module.exports = AzureBuildProcessor;

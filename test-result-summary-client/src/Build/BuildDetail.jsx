@@ -5,11 +5,13 @@ import { SearchOutput } from '../Search/';
 import { getParams, params } from '../utils/query';
 import { fetchData } from '../utils/Utils';
 import BuildTable from './BuildTable';
+import TopLevelBuildTable from './TopLevelBuildTable';
 
 export default class BuildDetail extends Component {
     state = {
         builds: [],
         parent: [],
+        tBuilds: [],
     };
 
     async componentDidMount() {
@@ -50,15 +52,43 @@ export default class BuildDetail extends Component {
 
         const parent = await fetchData(`/api/getData?_id=${parentId} `);
 
-        this.setState({ builds, parent });
+        const tBuilds = [];
+        const tPpls = [];
+        
+        if(parent[0].triggeredBuildIds)
+        {
+            const triggeredBuildIds = parent[0].triggeredBuildIds;
+            for (let tId of triggeredBuildIds)
+        {
+            const tBuild = await fetchData(`/api/getTriggeredBuild?buildNum=${tId} `);
+            if(!tPpls.includes(tBuild.buildName))
+            {
+                tBuilds.push(tBuild);
+                tPpls.push(tBuild.buildName);
+            }
+            
+        }
+        }
+        
+        //console.log(triggeredBuildIds);
+        
+        
+        // const tBuild = await fetchData(
+        //     //`/api/getChildBuilds?parentId=${tId}`
+        //     `/api/getTriggeredBuild?type=Test&tId=${tId}`
+        // );
+        // //const tBuild = tId;
+
+        this.setState({ builds, parent,tBuilds });
     }
 
     render() {
-        const { builds, parent } = this.state;
+        const { builds, parent, tBuilds } = this.state;
         const { parentId } = getParams(this.props.location.search);
 
         const childBuildsDataSource = [];
         for (let i = 0; i < builds.length; i++) {
+            // Data from the DB get placed into what get rendered in the frontend
             childBuildsDataSource.push({
                 key: i,
                 buildData: {
@@ -70,12 +100,13 @@ export default class BuildDetail extends Component {
                     buildResult: builds[i].buildResult,
                     buildUrl: builds[i].buildUrl,
                     type: builds[i].type,
-                    hasChildren: builds[i].hasChildren,
+                    hasChildren: builds[i].hasChildren, // Add has children into database 
                 },
                 jenkinsBuild: {
-                    buildName: builds[i].buildName,
+                    buildName: builds[i].buildNameStr, // switched to buildNameStr
                     buildNum: builds[i].buildNum,
-                    buildUrl: builds[i].buildUrl,
+                    //buildUrl: builds[i].buildUrl,
+                    buildUrl: "https://dev.azure.com/ms-juniper/Juniper/_build/results?buildId=" + builds[i].buildNum + "&view=logs&s=" + builds[i].subId,
                     url: builds[i].url,
                 },
                 result: {
@@ -87,6 +118,7 @@ export default class BuildDetail extends Component {
                     ? new Date(builds[i].timestamp).toLocaleString()
                     : null,
                 comments: builds[i].comments,
+                //triggeredBuildIds: builds[i].triggeredBuildIds,
             });
         }
 
@@ -104,17 +136,21 @@ export default class BuildDetail extends Component {
         ];
         const parentBuildsDataSource = [];
         let buildName = '';
+        let triggeredBuildIds = [];
         if (parent && parent[0]) {
             let i = 0;
             for (let key in parent[0].buildData) {
                 parentBuildsDataSource.push({
                     key: i++,
                     buildInfo: key,
-                    sha: parent[0].buildData[key],
+                    sha: parent[0].buildData[key],  
                 });
             }
             buildName = parent[0].buildName;
+            parentBuildsDataSource.push({triggeredBuildIds: parent[0].triggeredBuildIds})
+            //triggeredBuildIds = parent[0].triggeredBuildIds;
         }
+
 
         return (
             <div>
@@ -132,6 +168,21 @@ export default class BuildDetail extends Component {
                     title={'Children builds'}
                     buildData={childBuildsDataSource}
                 />
+
+                {/* Table for triggered builds */}
+                {tBuilds.map((tBuild, i) => {                    
+                            
+                                    console.log(tBuild);
+                                    return (     
+                                        <TopLevelBuildTable
+                                            url={tBuild.url} // url of triggered build
+                                            buildName={tBuild.buildName} // name of the triggered name
+                                            type="Build"
+                                            key={i}
+                                        />
+                                    );
+                                })
+                }
             </div>
         );
     }

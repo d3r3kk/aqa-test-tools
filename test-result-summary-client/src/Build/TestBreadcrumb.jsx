@@ -30,7 +30,7 @@ export default class TestBreadcrumb extends Component {
                             search: params({ parentId: build._id }),
                         }}
                     >
-                        {build.buildName} #{build.buildNum}
+                        {build.buildNameStr} {/*#{build.buildNum}*/}
                     </Link>
                 </Breadcrumb.Item>
             );
@@ -43,7 +43,7 @@ export default class TestBreadcrumb extends Component {
                             search: params({ buildId: build._id }),
                         }}
                     >
-                        {build.buildName} #{build.buildNum}
+                        {build.buildNameStr} {/*#{build.buildNum}*/}
                     </Link>
                 </Breadcrumb.Item>
             );

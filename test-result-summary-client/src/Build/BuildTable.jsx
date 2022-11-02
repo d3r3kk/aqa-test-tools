@@ -80,27 +80,31 @@ export default class BuildTable extends Component {
                         target="_blank"
                         rel="noopener noreferrer"
                     >
-                        {buildName} #{buildNum}
+                        {buildName} {/*#{buildNum}*/}
                     </a>
                     <br />
-                    <a
+                    {/* <a
                         href={blueOcean}
                         target="_blank"
                         rel="noopener noreferrer"
                     >
                         Blue Ocean
-                    </a>
+                    </a> */}
                 </div>
             );
         };
 
         const renderBuildName = (value, row, index) => {
+            console.log(value.buildResult)
             const resultColor =
                 value.buildResult === 'SUCCESS'
                     ? '#2cbe4e'
                     : value.buildResult === 'FAILURE'
                     ? '#f50'
+                    : value.buildResult === 'SKIPPED'
+                    ? '#808080'
                     : '#DAA520';
+            // decide on all test info/build detail
             if (value.type === 'Build') {
                 if (value.hasChildren) {
                     return (
@@ -161,6 +165,8 @@ export default class BuildTable extends Component {
                                 ? '#2cbe4e'
                                 : buildResult === 'FAILURE'
                                 ? '#f50'
+                                : buildResult === 'SKIPPED'
+                                ? '#808080'
                                 : '#DAA520',
                     }}
                 >
@@ -169,6 +175,7 @@ export default class BuildTable extends Component {
             );
         };
 
+        // The test result detail numbers
         const renderResultDetail = (testSummary) => {
             let resultDetail = 'n/a';
             if (testSummary) {

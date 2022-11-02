@@ -98,6 +98,8 @@ export default class DeepHistory extends Component {
                                     ? '#2cbe4e'
                                     : testResult === 'FAILED'
                                     ? '#f50'
+                                    : testResult === 'SKIPPED'
+                                    ? '#808080'
                                     : '#DAA520',
                         }}
                     >

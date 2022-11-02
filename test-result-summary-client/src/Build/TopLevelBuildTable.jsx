@@ -23,9 +23,9 @@ export default class TopLevelBuildTable extends Component {
             await this.updateData();
         }
 
-        if (prevState.currentPage !== this.state.currentPage) {
-            await this.updateTotals();
-        }
+        // if (prevState.currentPage !== this.state.currentPage) {
+        //     await this.updateTotals();
+        // }
     }
 
     async updateData() {
@@ -40,13 +40,15 @@ export default class TopLevelBuildTable extends Component {
             date: build.timestamp
                 ? new Date(build.timestamp).toLocaleString()
                 : null,
-            startBy: build.startBy ? build.startBy : 'N/A',
+            //startBy: build.startBy ? build.startBy : 'N/A',
+            startBy: build.azure.requestedFor.displayName ? build.azure.requestedFor.displayName : 'N/A',
             jenkins: build,
             keepForever: build.keepForever ? build.keepForever : false,
+            totals: build.totalTestSummary ? build.totalTestSummary: {},
         }));
         this.setState({ buildInfo });
 
-        await this.updateTotals();
+        //await this.updateTotals();
     }
 
     async updateTotals() {
@@ -117,6 +119,70 @@ export default class TopLevelBuildTable extends Component {
                             {renderPublishName(value)}
                         </>
                     );
+                    // if (TODO: CI == AzDO) {
+                    //     let icon = '';
+                    //     if (value.buildResult === 'SUCCESS') {
+                    //         icon = (
+                    //             <CheckOutlined
+                    //                 style={{ fontSize: 16, color: '#2cbe4e' }}
+                    //             />
+                    //         );
+                    //     } else if (value.buildResult === 'FAILURE') {
+                    //         icon = (
+                    //             <CloseOutlined
+                    //                 style={{ fontSize: 16, color: '#f50' }}
+                    //             />
+                    //         );
+                    //     } else if (value.status !== 'Done') {
+                    //         icon = (
+                    //             <LoadingOutlined
+                    //                 style={{ fontSize: 16, color: '#DAA520' }}
+                    //             />
+                    //         );
+                    //         value.buildResult = 'PROGRESSING';
+                    //     } else {
+                    //         icon = (
+                    //             <InfoOutlined
+                    //                 style={{ fontSize: 16, color: '#f50' }}
+                    //             />
+                    //         );
+                    //     }
+                    //     return (
+                    //         <div>
+                    //             <Tooltip title="Build tree">
+                    //                 <Link
+                    //                     to={{
+                    //                         pathname: "/buildTreeView",
+                    //                         search: params({ parentId: value._id }),
+                    //                     }}
+                    //                 >
+                    //                     <ApartmentOutlined />
+                    //                 </Link>
+                    //             </Tooltip>
+                    //             <Link
+                    //                 to={{
+                    //                     pathname: '/buildDetail',
+                    //                     search: params({ parentId: value._id }),
+                    //                 }}
+                    //                 style={{
+                    //                     color:
+                    //                         value.buildResult === 'SUCCESS'
+                    //                             ? '#2cbe4e'
+                    //                             : value.buildResult === 'FAILURE'
+                    //                                 ? '#f50'
+                    //                                 : '#DAA520',
+                    //                 }}
+                    //             >
+                    //                 {' '}Build #{value.buildNum}{' '}
+                    //                 <Tooltip title={value.buildResult}>
+                    //                     {icon}
+                    //                 </Tooltip>
+                    //             </Link>
+
+                    //             <br />
+                    //             {renderPublishName(value)}
+                    //         </div>
+                    //     );
                 }
                 return null;
             };
@@ -141,8 +207,8 @@ export default class TopLevelBuildTable extends Component {
                                                 result === 'PASSED'
                                                     ? '#2cbe4e'
                                                     : result === 'FAILED'
-                                                    ? '#f50'
-                                                    : '#DAA520',
+                                                        ? '#f50'
+                                                        : '#DAA520',
                                         }}
                                     >
                                         Build #{value.buildNum}
@@ -163,8 +229,8 @@ export default class TopLevelBuildTable extends Component {
                                             result === 'SUCCESS'
                                                 ? '#2cbe4e'
                                                 : result === 'FAILURE'
-                                                ? '#f50'
-                                                : '#DAA520',
+                                                    ? '#f50'
+                                                    : '#DAA520',
                                     }}
                                 >
                                     {' '}
@@ -207,19 +273,22 @@ export default class TopLevelBuildTable extends Component {
                             {buildName} #{buildNum}
                         </a>
                         <br />
-                        <a
+                        {/* <a
                             href={blueOcean}
                             target="_blank"
                             rel="noopener noreferrer"
                         >
                             Blue Ocean
-                        </a>
+                        </a> */}
                     </div>
                 );
             };
 
+            
             const renderTotals = (value, row, index) => {
                 if (!value) return <div>N/A</div>;
+                //console.log(buildInfo)
+                console.log(value);
                 const {
                     failed = 0,
                     passed = 0,
@@ -241,12 +310,13 @@ export default class TopLevelBuildTable extends Component {
                                     buildResult === 'SUCCESS'
                                         ? '#2cbe4e'
                                         : buildResult === 'FAILURE'
-                                        ? '#f50'
-                                        : '#DAA520',
+                                            ? '#f50'
+                                            : '#DAA520',
                             }}
                         >
                             Grid
                         </Link>
+                        {/*Render the test detail links */}
                         <div>
                             <BuildLink
                                 id={id}
@@ -289,6 +359,7 @@ export default class TopLevelBuildTable extends Component {
             };
 
             const renderBuildResults = (value) => {
+                console.log(value);
                 return (
                     <div>
                         <BuildLink
@@ -341,13 +412,14 @@ export default class TopLevelBuildTable extends Component {
                     },
                 },
                 {
-                    title: 'Jenkins Link',
+                    //title: 'Jenkins Link',
+                    title: 'Azure Devops Link',
                     dataIndex: 'jenkins',
                     key: 'jenkins',
                     render: renderJenkinsLinks,
                 },
                 {
-                    title: 'Date',
+                    title: 'Date ',
                     dataIndex: 'date',
                     key: 'date',
                     sorter: (a, b) => {

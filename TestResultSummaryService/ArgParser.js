@@ -2,7 +2,7 @@ const fs = require('fs');
 const { logger } = require('./Utils');
 let _config;
 
-parse = () => {
+const parse = () => {
     for (let i = 0; i < process.argv.length; i++) {
         let argv = process.argv[i];
         if (argv.startsWith('--configFile=')) {
@@ -16,11 +16,11 @@ parse = () => {
     }
 };
 
-getConfig = () => {
+const getConfig = () => {
     return _config;
 };
 
-getConfigDB = () => {
+const getConfigDB = () => {
     if (
         _config &&
         _config.DB &&
